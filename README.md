@@ -1,6 +1,3 @@
-![](https://raw.githubusercontent.com/kabanero-io/kabanero-website/master/src/main/content/img/Kabanero_Logo_Hero.png)
-
-
  ```
  ~/Documents/gse-devops/github.com/pipelines ./run.sh
 ===========================================================================
