@@ -1,0 +1,42 @@
+#Kabanero! on activate substitute StackId for text 'StackId'
+apiVersion: tekton.dev/v1alpha1
+kind: Pipeline
+metadata:
+  name: StackId-build-push-jk-pl
+spec:
+  resources:
+    - name: git-source
+      type: git
+    - name: docker-image
+      type: image
+  tasks:
+    - name: validate-stack-task
+      taskRef:
+        name: StackId-validate-stack-task
+      resources:
+        inputs:
+        - name: git-source
+          resource: git-source
+    - name: build-push-task
+      taskRef:
+        name: StackId-build-push-jk-task
+      runAfter: [validate-stack-task]
+      resources:
+        inputs:
+        - name: git-source
+          resource: git-source
+        outputs:
+        - name: docker-image
+          resource: docker-image
+        - name: git-source
+          resource: git-source
+    - name: image-scan-task
+      taskRef:
+        name: StackId-image-scan-task
+      runAfter: [build-push-task]
+      resources:
+        inputs:
+        - name: git-source
+          resource: git-source
+        - name: docker-image
+          resource: docker-image
