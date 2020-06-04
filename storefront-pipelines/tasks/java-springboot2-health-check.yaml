@@ -1,0 +1,54 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  name: custom-java-spring-boot2-health-check-task
+spec:
+  inputs:
+    resources:
+      - name: git-source
+        type: git
+    params:
+      - name: tools-image
+        type: string
+        default: garagecatalyst/ibmcloud-dev:1.0.10
+  steps:
+    - name: health-check
+      image: $(inputs.params.tools-image)
+      workingdir: $(inputs.resources.git-source.path)
+      env:
+        - name: NAMESPACE
+          value: storefront
+      envFrom:
+        - configMapRef:
+            name: ibmcloud-config
+      command: ["/bin/bash"]
+      args:
+        - -c
+        - |
+          set -e
+
+          ENVIRONMENT_NAME="${NAMESPACE}"
+          IMAGE_NAME=$(basename -s .git `git config --get remote.origin.url` | tr '[:upper:]' '[:lower:]' | sed 's/_/-/g')
+          if [[ "${CLUSTER_TYPE}" == "openshift" ]]; then
+              ROUTE_HOST=$(kubectl get route/${IMAGE_NAME} --namespace ${ENVIRONMENT_NAME} --output=jsonpath='{ .spec.host }')
+              URL="http://${ROUTE_HOST}"
+              echo $URL
+          else
+              INGRESS_HOST=$(kubectl get ingress/${IMAGE_NAME} --namespace ${ENVIRONMENT_NAME} --output=jsonpath='{ .spec.rules[0].host }')
+              URL="http://${INGRESS_HOST}"
+          fi
+          sleep_countdown=5
+          # sleep for 10 seconds to allow enough time for the server to start
+          sleep 10
+          echo "Health check start"
+          while [[ $(curl -sL -w "%{http_code}\\n" "${URL}/micro/actuator/health" -o /dev/null --connect-timeout 3 --max-time 5 --retry 3 --retry-max-time 30) != "200" ]]; do
+              sleep 30
+              echo "Health check failure. Remaining retries: $sleep_countdown"
+              sleep_countdown=$((sleep_countdown-1))
+              if [[ $sleep_countdown -eq 0 ]]; then
+                      echo "Could not reach health endpoint: ${URL}/micro/actuator/health"
+                      exit 1;
+              fi
+          done
+          echo "Successfully reached health endpoint: ${URL}/micro/actuator/health"
+          echo "====================================================================="

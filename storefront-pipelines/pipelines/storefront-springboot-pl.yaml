@@ -92,16 +92,16 @@ spec:
     taskRef:
       kind: Task
       name: java-spring-boot2-deploy-task
-  # - name: health-check-task
-  #   resources:
-  #     inputs:
-  #       - name: git-source
-  #         resource: git-source
-  #   runAfter:
-  #   - test-task
-  #   taskRef:
-  #     kind: Task
-  #     name: custom-java-spring-boot2-health-check-task
+  - name: health-check-task
+    resources:
+      inputs:
+        - name: git-source
+          resource: git-source
+    runAfter:
+    - test-task
+    taskRef:
+      kind: Task
+      name: custom-java-spring-boot2-health-check-task
   - name: gitops-task
     resources:
       inputs:
