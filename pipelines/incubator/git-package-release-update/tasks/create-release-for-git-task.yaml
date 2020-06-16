@@ -192,57 +192,31 @@ spec:
 
     - name: update-kabanero-cr
       image: $(inputs.params.asuh-image)
-      script: |
-        #!/usr/bin/env bash
-        # install packages
-        apt-get install -y jq curl git bc wget
+      args:
+        - '-c'
+        - |
+          set -e
 
-        oc project kabanero
+          # install packages
+          apt-get install -y jq
 
-        oc get kabaneros kabanero -o json > ./json/temp.json
-      
-        # print repo details
-        cat ./repo_details.json
+          oc project kabanero
 
-        current_version=$(jq --raw-output '.tag_name' ./repo_details.json)
+          oc get kabanero -o json > ./json/kabanero.json
 
-        host_url=https://github.com/$REPO_ORG/$REPO_NAME/releases/download/$current_version/default-kabanero-pipelines.tar.gz
-        name_of_pipeline=testing_pipeline
-        tar_file_name=default-kabanero-pipelines.tar.gz
+          host_url=https://github.com/$REPO_ORG/$REPO_NAME/releases/download/$current_version/default-kabanero-pipelines.tar.gz
 
-        # save the tar file locally
-        wget $host_url
+          #get sha256 from previous step on the zip file
+          get_sha=$(cat ./256.txt | head -n 1)
 
-        # generate sha256 on the zip file
-        get_sha=$(shasum -a 256 ./$tar_file_name | grep -Eo '^[^ ]+' )
+          # get the add_pipeline_template.json and replace the url, id and sha256 values and store it in another file
+          jq --compact-output '.https.url="'$host_url'" | .id="'$kabanero_pipeline_id'" | .sha256="'$get_sha'"' ./json/add_pipeline_template.json > ./json/add_pipeline_modified_template.json
 
-        echo "sha256 value: "$get_sha
+          echo "applying the new pipeline custom resource..."
 
-        # add double quotes to the sha256
-        new_sha=\"${get_sha}\"
+          oc patch Kabanero/kabanero -p '{"spec":{"stacks":{"pipelines":['$(cat ./json/add_pipeline_modified_template.json)']}}}' --type=merge --loglevel=9
 
-        # get the add_pipeline_template.json and replace the url, id and sha256 values and store it in another file
-        jq '.https.url="'$host_url'" | .id="'$name_of_pipeline'" | .sha256="'$get_sha'"'  ./json/add_pipeline_template.json > ./json/add_pipeline_modified_template.json
-
-        cat ./json/add_pipeline_modified_template.json
-
-        rm ./default-kabanero-pipelines.tar.gz
-
-        # Get the number of pipelines we currently have on the kabanero CR and increment by 1
-        num_of_pipelines=$(jq '.spec.stacks.pipelines | length' ./json/kabanero.json)+1
-
-        # add the add_pipeline_modified_template.json to the kabanero.json file
-        result=$(jq '.spec.stacks.pipelines['$num_of_pipelines']='"$(cat ./json/add_pipeline_modified_template.json)"'' ./json/kabanero.json)
-
-        # prettify and store the result in another file
-        echo $result | json_pp > ./json/kabanero-2.json
-
-        cd ./json
-
-        cat ./kabanero-2.json
-
-        # apply your new changes to the kabanero custom resource
-        # oc apply -f kabanero-2.json
+          echo "we are done"
 
 
       env:

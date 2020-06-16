@@ -1,0 +1,23 @@
+contents:
+- file: .DS_Store
+  sha256: d65165279105ca6773180500688df4bdc69a2c7b771752f0a46ef120b7fd8ec3
+- file: deploy-storefront-ms-to-openshift/tasks/clone-storefront-repo-automator-task.yaml
+  sha256: 956f56c6bc2fd4e2a0ed167516096ca12e2d36dd8a87141f91ef42dbbdcf1cb2
+- file: deploy-storefront-ms-to-openshift/pipelines/deploy-storefront-ms-to-openshift-pl.yaml
+  sha256: 451aa6b7a19d289faf567b1c25d76a4905d8f249fb0f43cfd4f4678e1922583c
+- file: README.md
+  sha256: e8b539d9e0fcea53f8aa8ac7721a52c2f9aa3ab067a3693f78dab5f601f94714
+- file: git-package-release-update/tasks/create-release-for-git-task.yaml
+  sha256: ce25f79a239c84613a695b756253f8208baba3a06864ebcd1df489d9753b7826
+- file: git-package-release-update/configmaps/pipeline-server-configmap.yaml
+  sha256: cba6c1a8ea98aba6fbb91c98e23dd9daa073572a222662ad5202051707dd1d7d
+- file: git-package-release-update/secrets/pipeline-server-git.yaml
+  sha256: f4d6d1e4e1b63ed5a553800178e4f4c46a0ac58e964e06925681d49e1dc97a22
+- file: git-package-release-update/template/git-package-release-update-pl-template.yaml
+  sha256: 4f45a5c8a17f22aa6300f87783a432356620392c2645f05b3ad43c8ee468392f
+- file: git-package-release-update/pipelines/git-package-release-update-pl.yaml
+  sha256: 9b4358ee92a19dc8a2f38ad35a2a1c89c6286b76ca3fcac0b9da9a7ed6aef6c1
+- file: git-package-release-update/bindings/git-package-release-update-pl-push-binding.yaml
+  sha256: 393f8abc4e9aae038e0e9f85da61d50c127d75425a81c736c4173a8a7b89e651
+- file: git-package-release-update/bindings/git-package-release-update-pl-pullrequest-binding.yaml
+  sha256: 4164ceeadc763bb749c042af3d9fed15818199a6695b7013ebfa16ce333b0a1b
