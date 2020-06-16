@@ -66,11 +66,6 @@ create_release() {
 
 # method is responsible for uploading an asset to a release
 upload_asset() {
-  # if [[ "$MODE"="PLACEHOLDER" ]]
-  # then
-  #   echo "Please run option 3 first before running option 4."
-  #   exit 2
-  # fi
   read -p "Upload asset to what version? i.e v1.0 : " tag
   GH_TAGS="$GH_REPO/releases/tags/$tag"
   filename=./ci/assets/default-kabanero-pipelines.tar.gz

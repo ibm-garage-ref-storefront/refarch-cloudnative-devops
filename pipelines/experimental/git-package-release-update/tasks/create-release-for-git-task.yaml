@@ -4,12 +4,11 @@ metadata:
   name: create-release-for-git-task
   namespace: kabanero
   author: Oscar I. Ricaud
-  date: 04/21/20
 spec:
   inputs:
     params:
       - name: asuh-image
-        default: googlefu/oscar-image:v1.0
+        default: googlefu/oscar-image:v2.0
         type: string
       - name: registry
         description: Specify the name of the project being built.
@@ -28,10 +27,8 @@ spec:
   steps:
     - name: setup-environment
       image: $(inputs.params.asuh-image)
-      script:
-        # generate your zip file
+      script: |
         cd ci
-        tree 
         ./package.sh
 
       env:
@@ -47,11 +44,6 @@ spec:
         - |
           set -e
 
-          ps aux | grep -i apt
-          
-          # install packages
-          # apt-get install -y jq curl git bc
-          
           # This function creates a json file to be used later in the curl call
           get_release_info() {
             {
@@ -79,18 +71,19 @@ spec:
 
           echo $current_version
 
-          if [ "$current_version" = null ]; then
-            current_version=1.0
-            new_version=$current_version
-          
+          if [[ -n "$current_version" ]]
+          then
+              echo "The server has already existing releases..."
+              new_version=`echo $current_version + 1.0 | bc`
           else
-            remove_first_char="${current_version:1}"
-            new_version=$(bc <<< "${current_version} + 1.0")
+              echo "The server does not have any existing releases"
+              current_version=1.0
+              new_version=$current_version
           fi
           
           echo "new version: $new_version"
 
-          REPO_FULL_NAME=$REPO_ORG/$REPO_NAME
+          REPO_FULL_NAME=$REPO_ORG"/"$REPO_NAME
           echo "REPO_FULL_NAME: $REPO_FULL_NAME"
           curl --data "$(get_release_info)" "https://api.github.com/repos/$REPO_FULL_NAME/releases?access_token=$GITHUB_TOKEN"
 
@@ -116,8 +109,13 @@ spec:
         - '-c'
         - |
           set -e
-          # apt-get install -y jq curl
 
+          echo "GITHUB_TOKEN " $GITHUB_TOKEN
+          echo "$REPO_ORG " + $REPO_ORG
+          echo "$REPO_NAME " + $REPO_NAME
+          echo "waiting..."
+          tree 
+          sleep 20s
           CONFIG=$@
           AUTH="Authorization: token $GITHUB_TOKEN"
           curl -s https://api.github.com/repos/$REPO_ORG/$REPO_NAME/releases/latest > repo_details.json
@@ -162,7 +160,7 @@ spec:
           }
 
           GH_ASSET="https://uploads.github.com/repos/$REPO_ORG/$REPO_NAME/releases/$id/assets?name=$(basename $filename)"
-          curl "$GITHUB_OAUTH_BASIC" --data-binary @"$filename" -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/octet-stream" "$GH_ASSET"
+          curl --data-binary @"$filename" -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/octet-stream" "$GH_ASSET"
 
       env:
         - name: GITHUB_TOKEN
