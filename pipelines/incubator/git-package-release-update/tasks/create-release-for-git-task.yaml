@@ -8,7 +8,7 @@ spec:
   inputs:
     params:
       - name: asuh-image
-        default: googlefu/oscar-image:v2.0
+        default: googlefu/oscar-image:v3.0
         type: string
       - name: registry
         description: Specify the name of the project being built.
@@ -114,11 +114,10 @@ spec:
         - |
           set -e
 
-          echo "GITHUB_TOKEN " $GITHUB_TOKEN
-          echo "$REPO_ORG " + $REPO_ORG
-          echo "$REPO_NAME " + $REPO_NAME
+          echo "GITHUB_TOKEN " "$GITHUB_TOKEN"
+          echo "$REPO_ORG " "$REPO_ORG"
+          echo "$REPO_NAME " "$REPO_NAME"
           echo "waiting..."
-          tree 
           sleep 20s
           CONFIG=$@
           AUTH="Authorization: token $GITHUB_TOKEN"
@@ -127,11 +126,16 @@ spec:
           cat ./repo_details.json
 
           current_version=$(jq --raw-output '.tag_name' ./repo_details.json)
-          echo $current_version
+          echo "$current_version"
 
           GH_TAGS="https://api.github.com/repos/$REPO_ORG/$REPO_NAME/releases/tags/$current_version"
 
           filename=./ci/assets/default-kabanero-pipelines.tar.gz
+          pwd
+          tree 
+          checksum_256=$(sha1sum ./ci/assets/default-kabanero-pipelines.tar.gz | grep -Eo '^[^ ]+')
+          echo "HERE"
+          echo $checksum_256 > 256.txt
           set -e xargs="$(which gxargs || which xargs)"
 
           # Validate settings.
@@ -148,12 +152,12 @@ spec:
           GH_REPO="https://api.github.com/repos/$REPO_ORG/$REPO_NAME"
 
           # Validate token.
-          curl -o /dev/null -sH "$AUTH" $GH_REPO || {
+          curl -o /dev/null -sH "$AUTH" "$GH_REPO" || {
             echo "Error: Invalid repo, token or network issue!"
             exit 1
           }
 
-          response=$(curl -sH "$AUTH" $GH_TAGS)
+          response=$(curl -sH "$AUTH" "$GH_TAGS")
 
           # Get ID of the asset based on given filename.
           eval $(echo "$response" | grep -m 1 "id.:" | grep -w id | tr : = | tr -cd '[[:alnum:]]=')
@@ -165,6 +169,7 @@ spec:
 
           GH_ASSET="https://uploads.github.com/repos/$REPO_ORG/$REPO_NAME/releases/$id/assets?name=$(basename $filename)"
           curl --data-binary @"$filename" -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/octet-stream" "$GH_ASSET"
+          echo "DONE"
 
       env:
         - name: GITHUB_TOKEN
@@ -192,29 +197,33 @@ spec:
 
     - name: update-kabanero-cr
       image: $(inputs.params.asuh-image)
-      args:
-        - '-c'
-        - |
-          set -e
+      script: |
+        #!/bin/sh
 
-          oc project kabanero
+        set -e
 
-          oc get kabanero -o json > ./json/kabanero.json
+        # install packages
+        sudo apt-get install -y jq
+        oc version
+        
+        oc get kabanero -o json > ./json/kabanero.json
 
-          host_url=https://github.com/$REPO_ORG/$REPO_NAME/releases/download/$current_version/default-kabanero-pipelines.tar.gz
+        current_version=$(jq --raw-output '.tag_name' ./repo_details.json)
+        echo "$current_version"
 
-          #get sha256 from previous step on the zip file
-          get_sha=$(cat ./256.txt | head -n 1)
+        host_url=https://github.com/$REPO_ORG/$REPO_NAME/releases/download/$current_version/default-kabanero-pipelines.tar.gz
 
-          # get the add_pipeline_template.json and replace the url, id and sha256 values and store it in another file
-          jq --compact-output '.https.url="'$host_url'" | .id="'$kabanero_pipeline_id'" | .sha256="'$get_sha'"' ./json/add_pipeline_template.json > ./json/add_pipeline_modified_template.json
+        # get sha256 from previous step on the zip file
+        get_sha=$(cat ./256.txt | head -n 1)
 
-          echo "applying the new pipeline custom resource..."
+        # get the add_pipeline_template.json and replace the url, id and sha256 values and store it in another file
+        jq --compact-output '.https.url="'$host_url'" | .id="'$kabanero_pipeline_id'" | .sha256="'$get_sha'"' ./json/add_pipeline_template.json > ./json/add_pipeline_modified_template.json
 
-          oc patch Kabanero/kabanero -p '{"spec":{"stacks":{"pipelines":['$(cat ./json/add_pipeline_modified_template.json)']}}}' --type=merge --loglevel=9
+        echo "applying the new pipeline custom resource..."
 
-          echo "we are done"
+        kubectl patch Kabanero/kabanero -p '{"spec":{"stacks":{"pipelines":['$(cat ./json/add_pipeline_modified_template.json)']}}}' --type=merge --loglevel=9
 
+        echo "we are done"
 
       env:
         - name: GITHUB_TOKEN
