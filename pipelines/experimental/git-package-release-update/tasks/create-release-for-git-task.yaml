@@ -9,7 +9,7 @@ spec:
   inputs:
     params:
       - name: asuh-image
-        default: googlefu/apic_compiler:v3-amd64
+        default: googlefu/oscar-image:v1.0
         type: string
       - name: registry
         description: Specify the name of the project being built.
@@ -28,11 +28,13 @@ spec:
   steps:
     - name: setup-environment
       image: $(inputs.params.asuh-image)
-      script: |
-
-        # generate your zip file
-        cd ci
-        ./package.sh
+      args:
+        - '-c'
+        - |
+          # generate your zip file
+          cd ci
+          tree 
+          ./package.sh
 
       env:
         - name: IMAGE_REGISTRY_PUBLISH
@@ -47,8 +49,10 @@ spec:
         - |
           set -e
 
+          ps aux | grep -i apt
+          
           # install packages
-          apt-get install -y jq curl git bc
+          # apt-get install -y jq curl git bc
           
           # This function creates a json file to be used later in the curl call
           get_release_info() {
@@ -114,7 +118,7 @@ spec:
         - '-c'
         - |
           set -e
-          apt-get install -y jq curl
+          # apt-get install -y jq curl
 
           CONFIG=$@
           AUTH="Authorization: token $GITHUB_TOKEN"
