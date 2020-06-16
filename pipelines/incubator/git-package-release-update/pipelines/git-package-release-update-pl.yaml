@@ -50,8 +50,6 @@ spec:
       params:
         - name: registry
           value: $(params.registry)
-        - name: index-image
-          value: $(params.index-image)
       taskRef:
         kind: Task
         name: create-release-for-git-task
