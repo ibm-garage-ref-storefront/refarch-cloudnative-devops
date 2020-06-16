@@ -197,9 +197,6 @@ spec:
         - |
           set -e
 
-          # install packages
-          apt-get install -y jq
-
           oc project kabanero
 
           oc get kabanero -o json > ./json/kabanero.json
