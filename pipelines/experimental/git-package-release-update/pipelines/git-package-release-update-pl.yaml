@@ -28,7 +28,6 @@ spec:
       default: 'true'
     - name: index-image
       description: name of image
-      default: healthcheck-pipeline
     - name: event-type
       description: The event type
       type: string

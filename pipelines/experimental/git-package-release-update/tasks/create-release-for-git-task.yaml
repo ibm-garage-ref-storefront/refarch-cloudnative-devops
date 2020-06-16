@@ -37,8 +37,6 @@ spec:
       env:
         - name: IMAGE_REGISTRY_PUBLISH
           value: 'false'
-        - name: REGISTRY
-          value: docker.io
       resources: {}
       workingDir: $(inputs.resources.source.path)
 
@@ -100,26 +98,13 @@ spec:
         - name: GITHUB_TOKEN
           valueFrom:
             secretKeyRef:
-              name: oscar-ricaud-git
-              key: password
-        - name: IMAGE_REGISTRY_USERNAME
-          valueFrom:
-            secretKeyRef:
-              name: oscar-ricaud-docker
-              key: username
-        - name: IMAGE_REGISTRY_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: oscar-ricaud-docker
+              name: pipeline-server-git
               key: password
         - name: REPO_ORG
           value: oiricaud
         - name: REPO_NAME
           value: pipeline-server
-        - name: REGISTRY
-          value: $(inputs.params.registry)
-        - name: IMAGE_REGISTRY_PUBLISH
-          value: $(inputs.params.image-registry-publish)
+
       resources: {}
       workingDir: $(inputs.resources.source.path)
 
@@ -181,25 +166,12 @@ spec:
         - name: GITHUB_TOKEN
           valueFrom:
             secretKeyRef:
-              name: oscar-ricaud-git
+              name: pipeline-server-git
               key: password      
         - name: REPO_ORG
           value: oiricaud
         - name: REPO_NAME
           value: pipeline-server
-        - name: IMAGE_REGISTRY_USERNAME
-          valueFrom:
-            secretKeyRef:
-              name: oscar-ricaud-docker
-              key: username
-        - name: IMAGE_REGISTRY_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: oscar-ricaud-docker
-              key: password
-
-        - name: REGISTRY
-          value: $(inputs.params.registry)
         - name: IMAGE_REGISTRY_PUBLISH
           value: $(inputs.params.image-registry-publish)
       resources: {}
@@ -264,7 +236,7 @@ spec:
         - name: GITHUB_TOKEN
           valueFrom:
             secretKeyRef:
-              name: oscar-ricaud-git
+              name: pipeline-server-git
               key: password
         - name: REPO_ORG
           value: oiricaud
