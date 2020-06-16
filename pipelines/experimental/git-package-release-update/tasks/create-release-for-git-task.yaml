@@ -28,13 +28,11 @@ spec:
   steps:
     - name: setup-environment
       image: $(inputs.params.asuh-image)
-      args:
-        - '-c'
-        - |
-          # generate your zip file
-          cd ci
-          tree 
-          ./package.sh
+      script:
+        # generate your zip file
+        cd ci
+        tree 
+        ./package.sh
 
       env:
         - name: IMAGE_REGISTRY_PUBLISH
