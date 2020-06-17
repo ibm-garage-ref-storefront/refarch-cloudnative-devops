@@ -1,22 +1,8 @@
 apiVersion: tekton.dev/v1alpha1
 kind: Pipeline
 metadata:
-  annotations:
-    kubectl.kubernetes.io/last-applied-configuration: >
-      {"apiVersion":"tekton.dev/v1alpha1","kind":"Pipeline","metadata":{"annotations":{"manifestival":"new"},"name":"deploy-storefront-ms-to-openshift-pl","namespace":"kabanero"},"spec":{"params":[{"default":"storefront-dev","description":"Specify
-      the Github organization to deploy the microservices
-      to","name":"github_org"},{"default":"or","description":"Specify the users'
-      github
-      initials","name":"github_initials"}],"tasks":[{"name":"clone-storefront-repo-automator","params":[{"name":"github_org","value":"$(params.github_org)"},{"name":"github_initials","value":"$(params.github_initials)"}],"taskRef":{"kind":"Task","name":"clone-storefront-repo-automator-task"}}]}}
-    manifestival: new
-  creationTimestamp: '2020-06-09T20:55:33Z'
-  generation: 5
   name: deploy-storefront-ms-to-openshift-pl
   namespace: kabanero
-  resourceVersion: '15601693'
-  selfLink: >-
-    /apis/tekton.dev/v1alpha1/namespaces/kabanero/pipelines/deploy-storefront-ms-to-openshift-pl
-  uid: 559efe39-9dcd-4e49-8b8c-d1fae31d80a8
 spec:
   params:
     - default: storefront-dev

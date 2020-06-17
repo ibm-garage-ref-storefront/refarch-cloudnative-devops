@@ -7,3 +7,4 @@ data:
   repo_org: oiricaud
   repo_name: pipeline-server
   image_registry_publish: 'false'
+  kabanero_pipeline_id: pipeline-manager
