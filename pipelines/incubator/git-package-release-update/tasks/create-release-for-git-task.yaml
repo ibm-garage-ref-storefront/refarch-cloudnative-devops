@@ -7,7 +7,7 @@ metadata:
 spec:
   inputs:
     params:
-      - name: asuh-image
+      - name: package-manager-image
         default: googlefu/oscar-image:v3.0
         type: string
       - name: registry
@@ -20,7 +20,7 @@ spec:
         type: image
   steps:
     - name: setup-environment
-      image: $(inputs.params.asuh-image)
+      image: $(inputs.params.package-manager-image)
       script: |
         cd ci
         ./package.sh
@@ -36,7 +36,7 @@ spec:
       workingDir: $(inputs.resources.source.path)
 
     - name: create-release
-      image: $(inputs.params.asuh-image)
+      image: $(inputs.params.package-manager-image)
       args:
         - '-c'
         - |
@@ -61,32 +61,32 @@ spec:
           echo "REPO_ORG: $REPO_ORG"
           echo "REPO_NAME: $REPO_NAME"
 
-          curl -s https://api.github.com/repos/$REPO_ORG/$REPO_NAME/releases/latest > repo_details.json
+          # Get webhook repo details
+          curl -s https://api.github.com/repos/"$REPO_ORG"/"$REPO_NAME"/releases/latest > repo_details.json
 
+          # Print webhook repo details
           cat ./repo_details.json
 
+          # Get current release version of the webhook repo
           current_version=$(jq --raw-output '.tag_name' ./repo_details.json)
 
-          echo $current_version
+          echo "current git release version: " "$current_version"
 
           if [[ -n "$current_version" ]]
           then
               echo "The server has already existing releases..."
-              new_version=`echo $current_version + 1.0 | bc`
+              new_version=`echo "$current_version" + 1.0 | bc`
           else
               echo "The server does not have any existing releases"
               current_version=1.0
               new_version=$current_version
           fi
           
-          echo "new version: $new_version"
+          echo "new git release version: " $new_version
 
-          REPO_FULL_NAME=$REPO_ORG"/"$REPO_NAME
-          echo "REPO_FULL_NAME: $REPO_FULL_NAME"
-          curl --data "$(get_release_info)" "https://api.github.com/repos/$REPO_FULL_NAME/releases?access_token=$GITHUB_TOKEN"
+          curl --data "$(get_release_info)" "https://api.github.com/repos/$REPO_ORG/$REPO_NAME/releases?access_token=$GITHUB_TOKEN"
 
-          echo "DONE"
-        
+          echo "Success! Created a new release version" "$new_version" "on https://www.github.com/""$REPO_ORG"/"$REPO_NAME" 
       env:
         - name: REPO_ORG
           valueFrom:
@@ -108,7 +108,7 @@ spec:
       workingDir: $(inputs.resources.source.path)
 
     - name: upload-asset-to-release
-      image: $(inputs.params.asuh-image)
+      image: $(inputs.params.package-manager-image)
       args:
         - '-c'
         - |
@@ -116,11 +116,11 @@ spec:
 
           echo "$REPO_ORG " "$REPO_ORG"
           echo "$REPO_NAME " "$REPO_NAME"
-          echo "waiting..."
+          echo "waiting... 20seconds"
           sleep 20s
           CONFIG=$@
           AUTH="Authorization: token $GITHUB_TOKEN"
-          curl -s https://api.github.com/repos/$REPO_ORG/$REPO_NAME/releases/latest > repo_details.json
+          curl -s https://api.github.com/repos/"$REPO_ORG"/"$REPO_NAME"/releases/latest > repo_details.json
 
           cat ./repo_details.json
 
@@ -133,8 +133,7 @@ spec:
           pwd
           tree 
           checksum_256=$(shasum -a 256 ./ci/assets/default-kabanero-pipelines.tar.gz | grep -Eo '^[^ ]+')
-          echo "HERE"
-          echo $checksum_256 > 256.txt
+          echo "$checksum_256" > 256.txt
           set -e xargs="$(which gxargs || which xargs)"
 
           # Validate settings.
@@ -168,7 +167,7 @@ spec:
 
           GH_ASSET="https://uploads.github.com/repos/$REPO_ORG/$REPO_NAME/releases/$id/assets?name=$(basename $filename)"
           curl --data-binary @"$filename" -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/octet-stream" "$GH_ASSET"
-          echo "DONE"
+          echo "Success! Uploading an asset to github release version" "$current_version" on "https://github.com/"$REPO_ORG/$REPO_NAME
 
       env:
         - name: GITHUB_TOKEN
@@ -194,8 +193,8 @@ spec:
       resources: {}
       workingDir: $(inputs.resources.source.path)
 
-    - name: update-kabanero-cr
-      image: $(inputs.params.asuh-image)
+    - name: update-kabanero-custom-resource
+      image: $(inputs.params.package-manager-image)
       args:
         - '-c'
         - |
@@ -208,33 +207,33 @@ spec:
           host_url=https://github.com/$REPO_ORG/$REPO_NAME/releases/download/$current_version/default-kabanero-pipelines.tar.gz
 
           # get sha256 from previous step on the zip file
-          get_sha=$(cat ./256.txt | head -n 1)
+          get_sha=$(< ./256.txt | head -n 1)
 
           echo "$current_version" "$get_sha"
           # get the add_pipeline_template.json and replace the url, id and sha256 values and store it in another file
-          jq --compact-output '.[0].https.url="'$host_url'" | .[0].id="'$KABANERO_PIPELINE_ID'" | .[0].sha256="'$get_sha'"' ./json/pipeline_template.json > ./json/pipeline_modified_template.json
+          jq --compact-output '.[0].https.url="'"$host_url"'" | .[0].id="'"$KABANERO_PIPELINE_ID"'" | .[0].sha256="'"$get_sha"'"' ./json/pipeline_template.json > ./json/pipeline_modified_template.json
 
-          echo "The Kabanero Custom Resource has "$num_of_pipelines " pipelines"
-          if (( $num_of_pipelines == 0 )); then
+          echo "The Kabanero Custom Resource has" $num_of_pipelines: " pipelines"
+          if (( num_of_pipelines == 0 )); then
               echo "The Kabanero Custom Resource has no pipelines"
               cat ./json/pipeline_modified_template.json
 
               echo "applying the new pipeline custom resource..."
 
-              oc patch Kabanero/kabanero -p '{"spec":{"stacks":{"pipelines":'$(cat ./json/pipeline_modified_template.json)'}}}' --type=merge --loglevel=9 
+              oc patch Kabanero/kabanero -p '{"spec":{"stacks":{"pipelines":'"$(cat ./json/pipeline_modified_template.json)"'}}}' --type=merge --loglevel=9 
           
           else
-              for ((n=0;n<$num_of_pipelines;n++));
+              for ((n=0;n<num_of_pipelines;n++));
               do
-                  get_id=$(jq --raw-output '.items[].spec.stacks.pipelines | .['$n'].id' ./json/kabanero.json)
-                  echo "----> pipeline:" "$get_id" "pipeline name we are adding ---> " $KABANERO_PIPELINE_ID
+                  get_id=$(jq --raw-output '.items[].spec.stacks.pipelines | .['"$n"'].id' ./json/kabanero.json)
+                  echo "----> pipeline:" "$get_id" "pipeline name we are comparing against ---> " "$KABANERO_PIPELINE_ID"
                   if [ "$get_id" = "$KABANERO_PIPELINE_ID" ]; then
-                      echo "The Kabanero Custom Resource already has this pipeline... at index " $n ", we will update the URL and Checksum value..."
+                      echo "The Kabanero Custom Resource already has this pipeline... at index " "$n" ", we will update the URL and Checksum value..."
                       jq '.items[].spec.stacks.pipelines' ./json/kabanero.json > ./json/current_pipelines.json
-                      jq --compact-output '.['$n'].https.url="'$host_url'" | .['$n'].id="'$KABANERO_PIPELINE_ID'" | .['$n'].sha256="'$get_sha'"' ./json/current_pipelines.json > ./json/merged_pipelines.json
+                      jq --compact-output '.['"$n"'].https.url="'$host_url'" | .['"$n"'].id="'$KABANERO_PIPELINE_ID'" | .['"$n"'].sha256="'$get_sha'"' ./json/current_pipelines.json > ./json/merged_pipelines.json
                       echo "modified pipelines..."
                       cat ./json/merged_pipelines.json
-                      oc patch Kabanero/kabanero -p '{"spec":{"stacks":{"pipelines":'$(cat ./json/merged_pipelines.json)'}}}' --type=merge --loglevel=9
+                      oc patch Kabanero/kabanero -p '{"spec":{"stacks":{"pipelines":'"$(cat ./json/merged_pipelines.json)"'}}}' --type=merge --loglevel=9
                       exit 0;
                   fi
               done
@@ -250,7 +249,7 @@ spec:
 
               echo "printing merged pipelines..."
               cat ./json/merged_pipelines.json
-              oc patch Kabanero/kabanero -p '{"spec":{"stacks":{"pipelines":'$(cat ./json/merged_pipelines.json)'}}}' --type=merge --loglevel=9
+              oc patch Kabanero/kabanero -p '{"spec":{"stacks":{"pipelines":'"$(cat ./json/merged_pipelines.json)"'}}}' --type=merge --loglevel=9
 
           fi
 
