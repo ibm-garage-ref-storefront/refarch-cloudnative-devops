@@ -8,7 +8,7 @@ contents:
 - file: README.md
   sha256: e8b539d9e0fcea53f8aa8ac7721a52c2f9aa3ab067a3693f78dab5f601f94714
 - file: git-package-release-update/tasks/create-release-for-git-task.yaml
-  sha256: ce25f79a239c84613a695b756253f8208baba3a06864ebcd1df489d9753b7826
+  sha256: 563a9a8e57966033d90b9c0b491b56e22c863956ace24a21e2373526cec49c08
 - file: git-package-release-update/configmaps/pipeline-server-configmap.yaml
   sha256: cba6c1a8ea98aba6fbb91c98e23dd9daa073572a222662ad5202051707dd1d7d
 - file: git-package-release-update/secrets/pipeline-server-git.yaml
