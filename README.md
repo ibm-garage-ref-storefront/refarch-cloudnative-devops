@@ -6,40 +6,34 @@ to full-fill software requirements. Currently, there are not many methods to man
 pipelines, and the goal of this repository is to help you get going.
 
 You will learn how to package, host your pipelines in different environments such as Git or Artifactory and use
-these pipelines to automate the process of updating the [kabanero custom resource](https://kabanero.io/docs/ref/general/configuration/kabanero-cr-config.html) 
+these pipelines to automate the process of updating the [Kabanero custom resource](https://kabanero.io/docs/ref/general/configuration/kabanero-cr-config.html) 
 to a respective host where your Kabanero pipelines exist.
 
 ## Table of Contents
   * [Extend, Build & Deploy Kabanero Pipelines](#extend-build--deploy-kabanero-pipelines)
   * [Overview](#overview)
   * [Pre-requisites](#pre-requisites)
-  * [Package pipelines](#package-pipelines)
   * [How to create a custom stack](#how-to-create-a-custom-stack)
   * [How to release your stacks to Kabanero ](#how-to-release-your-stacks-to-kabanero)
   * [Bound Custom Pipelines to Kabanero Stacks](#bound-custom-pipelines-to-kabanero-stacks)
   * [Host packaged-pipelines on Artifactory](#host-pipelines-on-artifactory)
-  * [Host packaged-pipelines on Git Manually](#host-pipelines-on-git-manually)
   * [How to use git-package-release-update pipeline](#how-to-use-git-package-release-update-pipeline)
-  * [Deploy packaged pipelines onto the kabanero namespace](#deploy-packaged-pipelines-onto-kabanero-namespace)
   * [Host pipelines without version control](#deploy-pipelines-without-version-control)
   * [Create tekton webhook](#create-a-tekton-webhook)
-  * [Definitions](#definitions)
   
 # Overview
-This repository includes 3 [directories](../../../../Downloads/devops-demo-kabanero-pipelines-master/pipelines), `experimental`(pipelines that are not production-ready and are considered,
-proof of concept),`incubator`(pipelines that are not production-ready and require further development to satisfy the stable criteria.) 
-and `stable`(pipelines that are production ready).
+This repository includes 3 [directories](/pipelines), `experimental`(pipelines that are not production-ready and are considered, proof of concept),`incubator`(pipelines that are not production-ready and require further development to satisfy the stable criteria.) and `stable`(pipelines that are production ready).
 
-This repository also contains multiple [/pipelines/](../../../../Downloads/devops-demo-kabanero-pipelines-master/pipelines/incubator) such as [artifactory-package-release-update](pipelines/experimental/artifactory-package-release-update), 
-[git-package-release-update](../../../../Downloads/devops-demo-kabanero-pipelines-master/pipelines/experimental/git-package-release-update) and [mcm-pipelines](../../../../Downloads/devops-demo-kabanero-pipelines-master/pipelines/incubator/mcm-pipelines).
- The repository also contains a [./run.sh](../../../../Downloads/devops-demo-kabanero-pipelines-master/run.sh) script file which helps automate the process of deploying your pipelines as git releases.
+This repository also contains multiple [/pipelines/](/pipelines/incubator) such as [artifactory-package-release-update](pipelines/experimental/artifactory-package-release-update), 
+[git-package-release-update](/pipelines/experimental/git-package-release-update) and [mcm-pipelines](/pipelines/incubator/mcm-pipelines).
+ 
 
 There are multiple approaches on packaging and releasing your pipelines. Both the `artifactory-package-release-update` & `git-package-release-update` pipelines do the same thing, package, manage
 and deploy your custom pipelines, except hosted in different environments. For example, the `artifactory-package-release-update` pipeline, packages your
-pipelines and host them onto Artifactory, where as the `git-package-release-update` are hosted as git releases. The goal of this repository
+pipelines and host them onto Artifactory, where the `git-package-release-update` are hosted as git releases. The goal of this repository
 is to get you going in managing your custom made pipelines. 
 
-The `mcm-pipelines` contains the tasks of building, testing, pushing an image and a healthcheck of a nodejs application. It also
+The `mcm-pipelines` contains the tasks of building, testing, pushing an image and a health-check of a nodejs application. It also
 does a `sonar-scan` for code coverage.
    
 # Pre-requisites
@@ -51,70 +45,9 @@ does a `sonar-scan` for code coverage.
     + [`Openshift 4.3.5 with CloudPak for Apps`](https://www.ibm.com/cloud/cloud-pak-for-applications)
     + [`tekton cli`](https://github.com/tektoncd/cli)
     
-# Package pipelines
-To package your pipelines you must run the `run.sh` script as shown below: 
-Enter `1` to set up your environment, containerize your pipelines and release them to a registry. 
-Ensure to update the variables (optional if you want to deploy an image of your pipelines onto a registry)
-in [env.sh](../../../../Downloads/devops-demo-kabanero-pipelines-master/ci/env.sh) with your corresponding registry values.
-
-``` bash
-# Publish images to image registry
-export IMAGE_REGISTRY_PUBLISH=false
-
-# Credentials for publishing images:
-export IMAGE_REGISTRY=your-image-registry
-export IMAGE_REGISTRY_USERNAME=your-image-registry-username
-export IMAGE_REGISTRY_PASSWORD=your-image-password
-
-# Organization for images
-export IMAGE_REGISTRY_ORG=your-org-name
-
-# Name of pipelines-index image (ci/package.sh)
-export INDEX_IMAGE=pipelines-index
-
-# Version or snapshot identifier for pipelines-index (ci/package.sh)
-export INDEX_VERSION=SNAPSHOT
-```
-
-``` bash
-$ ./run.sh
-===========================================================================
-
-======================== AUTOMATOR SCRIPT =================================
-
-===========================================================================
-
-Do you want to
-    1) Set up environment, containerzied pipelines and release them to a registry?
-    2) Add, commit and push your latest changes to github?
-    3) Create a git release for your pipelines?
-    4) Upload an asset to a git release version?
-    5) Update the Kabanero CR custom resource with a release?
-    6) Add a stable pipeline release version to the Kabanero custom resource?
-    enter a number > 1
-**************************************************************************
-
-**************** BEGIN SETTING UP ENV, PACKAGE AND RELEASE ***************
-
-**************************************************************************
-
-/Users/Oscar.Ricaud@ibm.com/Documents/gse-devops/github.com/oiricaud-devops-demo-kabanero-pipelines
-Asset name: mcm-pipelines/tasks/igc-nodejs-test.yaml
-Asset name: mcm-pipelines/tasks/nodejs-build-push-task.yaml
-Asset name: mcm-pipelines/tasks/nodejs-image-scan-task.yaml
-Asset name: mcm-pipelines/tasks/gitops.yaml
-Asset name: mcm-pipelines/tasks/health-check-task.yaml
-Asset name: mcm-pipelines/pipelines/nodejs-mcm-pl.yaml
-Asset name: mcm-pipelines/templates/nodejs-mcm-pl-template.yaml
-Asset name: mcm-pipelines/bindings/nodejs-mcm-pl-push-binding.yaml
-Asset name: mcm-pipelines/bindings/nodejs-mcm-pl-pullrequest-binding.yaml
-Asset name: manifest.yaml
---- Created kabanero-pipelines.tar.gz
-```
-You will see a new zip file under [ci/assets/](../../../../Downloads/devops-demo-kabanero-pipelines-master/ci/assets/default-kabanero-pipelines)
 
 # How to Create a Custom Stack
-Lets say you decide to create a new Kabanero custom stack because the Kabanero stacks do not meet your requirement needs. What if you have an Angular application and wanted to incoroporate a Kabanero stack across your organization, you can achieve this by creating a Kabanero custom stack. In this section you will be learning how to create a Kabanero custom stack. 
+Lets say you decide to create a new Kabanero custom stack because the Kabanero stacks do not meet your requirement needs. What if you have an Angular application and wanted to incorporate a Kabanero stack across your organization, you can achieve this by creating a Kabanero custom stack. In this section you will be learning how to create a Kabanero custom stack. 
 
 To view the following Kabanero stacks in your `dev.local` repository, run the following command:
 ```bash
@@ -256,7 +189,7 @@ From the stack directory you created `typescript-angular` run the following comm
     `oc apply -f kabanero.json`
 
     The result should look like the following image.
-    ![alt text](../../../../Downloads/devops-demo-kabanero-pipelines-master/img/stacks.png)
+    ![alt text](/img/stacks.png)
 
 
 # Bound Custom Pipelines to Kabanero Stacks
@@ -268,16 +201,16 @@ It is pretty easy to bound your custom pipelines onto the default kabanero stack
 - NodeJS
 - Nodejs Express
 
-You can reuse these stacks to bound your custom pipelines. And if you are not familar with what Stacks are you can visit this link for more [info](https://kabanero.io/developer/cli/). Essentially, Kabanero Stacks are container images prebuilt with runtimes and frameworks.For example, in this repository there are custom pipelines that we have created for our requirement needs.
+You can reuse these stacks to bound your custom pipelines, and if you are not familiar with what Stacks are you can visit this link for more [info](https://kabanero.io/developer/cli/). Essentially, Kabanero Stacks are container images prebuilt with run times and frameworks.For example, in this repository there are custom pipelines that we have created for our requirement needs.
 
-- [mcm-pipelines](../../../../Downloads/devops-demo-kabanero-pipelines-master/pipelines/incubator/mcm-pipelines)
-- [cloud-foundry](../../../../Downloads/devops-demo-kabanero-pipelines-master/pipelines/experimental/cloud-foundry)
-- [deploy-app-ibm-cloud](../../../../Downloads/devops-demo-kabanero-pipelines-master/pipelines/experimental/deploy-app-ibm-cloud)
-- [git-package-release-update](../../../../Downloads/devops-demo-kabanero-pipelines-master/pipelines/experimental/git-package-release-update)
-- [artifactory-package-release-update](../../../../Downloads/devops-demo-kabanero-pipelines-master/pipelines/incubator/artifactory-package-release-update)
+- [mcm-pipelines](pipelines/incubator/mcm-pipelines)
+- [cloud-foundry](/pipelines/experimental/cloud-foundry)
+- [deploy-app-ibm-cloud](/pipelines/experimental/deploy-app-ibm-cloud)
+- [git-package-release-update](/pipelines/experimental/git-package-release-update)
+- [artifactory-package-release-update](/pipelines/incubator/artifactory-package-release-update)
 
-If you wanted to bound let's say, `deploy-app-ibm-cloud` or a custom pipeline that you created to all of the kabanero default stacks as shown above. We can achieve that by following the steps:
-1. Inspect current pipeline, tasks and trigger bindings. We currently have in `deploy-app-ibm-cloud` pipeline
+If you wanted to bound let's say, `deploy-app-ibm-cloud` or a custom pipeline that you created to all the kabanero default stacks as shown above. We can achieve that by following the steps:
+1. Inspect the current pipeline, tasks and trigger bindings. We currently have in `deploy-app-ibm-cloud` pipeline.
     ```yaml
     apiVersion: tekton.dev/v1alpha1
     kind: Pipeline
@@ -306,7 +239,7 @@ If you wanted to bound let's say, `deploy-app-ibm-cloud` or a custom pipeline th
     ``` 
 2. Repeat for the Trigger bindings same process as step 1. The result should look like the following:
     
-    TriggerBinding for pullrequest
+    TriggerBinding for pull request
     ```yaml
     #Kabanero! on activate substitute StackId for text 'StackId' 
     apiVersion: tekton.dev/v1alpha1
@@ -363,7 +296,7 @@ If you wanted to bound let's say, `deploy-app-ibm-cloud` or a custom pipeline th
 
 # Host pipelines on Artifactory
 ### Pre-reqs
-You need to deploy [Artifactory](https://github.com/ibm-cloud-architecture/gse-devops/tree/master/cloudpak-for-integration-tekton-pipelines#artifactory) on your openshift cluster
+You need to deploy [Artifactory](https://github.com/ibm-cloud-architecture/gse-devops/tree/master/cloudpak-for-integration-tekton-pipelines#artifactory) on your Openshift cluster
 
 You need to generate an [API Key](https://www.jfrog.com/confluence/display/JFROG/User+Profile). Then you need to go to
 [artifactory-config.yaml](../../../../Downloads/devops-demo-kabanero-pipelines-master/configmaps/artifactory-config.yaml) and update the `artifactory_key`. Once done, run the following
@@ -384,35 +317,26 @@ cd pipelines/experimental
 oc apply --recursive --filename pipelines/experminetal/artifactory-package-release-update/
 ```
 
-Go to the dashboard and verify that the `artifactory-package-release-update-pl` has been added to the tekton dashboard
-Go to section [Create tekton webhook](#create-a-tekton-webhook) to create your webhook.
-Once you are done with that go to your forked repository and make a change and your tekton dashboard should create a 
+Go to the dashboard and verify that the `artifactory-package-release-update-pl` has been added to the Tekton dashboard
+Go to section [Create tekton webhook](#create-a-tekton-webhook) to create your web hook.
+Once you are done with that go to your forked repository and make a change, and your Tekton dashboard should create a 
 new pipeline run as shown below:
 
 You could also manually trigger your pipelines
-![](../../../../Downloads/devops-demo-kabanero-pipelines-master/gifs/artifactory-package-release-update-pl-rn.gif)
+![](gifs/artifactory-package-release-update-pl-rn.gif)
 
 Where the `git-source` is defined as the pipeline resource with key [url] and value [github repo url] 
 
 The end result should look like the following:
 
-![alt text](../../../../Downloads/devops-demo-kabanero-pipelines-master/img/artifactory-package-release-update-pl-rn.png)
-
-# Host pipelines on Git (Manually)
-You will first need to package your pipelines. To do that go to the [package-pipelines](#package-pipelines)
-After you are done with that step you will notice a new file named `default-kabanero-pipelines.tar.gz` under
-`ci/assets` which includes your pipelines along with their corresponding checksum values. You will use this file to upload
-as an asset on github.
-
-But first, create a new repository i.e named `pipeline-server` on github and follow the steps as shown on the gif.
-![](../../../../Downloads/devops-demo-kabanero-pipelines-master/gifs/create-release-git.gif)
+![alt text](/img/artifactory-package-release-update-pl-rn.png)
 
 # How to use git-package-release-update pipeline
 You can use a pipeline to automate the process of extending, packaging and releasing your pipelines via a Git Release. The process is very similar to the section above. The only difference is that we will use a pipeline to automate the tedious steps. You can skip this section if you already did the section before and are not interested in using a pipeline to automate the process of extending, packaging and releasing your pipelines.
 
 Pre-requisites:
 1)  You must create a new repo such as `devops-pipelines`, you will be using the `devops-pipelines` repository to build your pipelines. Clone this [repository](https://github.com/ibm-garage-ref-storefront/devops-pipelines) and add your pipelines to any of the folders `experimental`, `incubator`, `stable`.
-    <br>
+
     If you inspect `./pipelines/` you can create a new folder for each new pipeline you have and follow a similar structure as below.
 
     ```bash
@@ -471,7 +395,7 @@ Pre-requisites:
     ```
     Now drag and drop your pipelines and tasks to any of these folders, remember pipelines in `expermental` do not get built.
 
-2) You must update the `configmap` and `secret` we provided for you. But first, create another repository such as `devops-server`. In this repo `devops-server` you will be hosting your pipelines as Git releases.
+2) You must update the `configmap` and `secret` we provided for you. But first, create another repository such as `devops-server`. In this repo `devops-server` you will be hosting your pipelines as Git releases. Do not forget to create a README.md file. 
 
     Navigate to `pipelines/incubator/git-package-release-update/configmaps` and update the `pipeline-server-configmap.yaml`
 
@@ -501,55 +425,40 @@ Pre-requisites:
         password: your-git-token-encoded
         username: your-git-username-encoded
     ```
-3) Deploy your pipeline, tasks, event bindings and trigger templates by running the following command:
+3) Create web hook for the `devops-pipelines` repository you created on step 1.
+
+4) Deploy your pipeline, tasks, event bindings and trigger templates by running the following command in the `devops-pipelines` repo you created on step 1:
 
     ```bash
     oc apply --recursive --filename pipelines/incubator/git-package-release-update
     git add .
-    
+    git commit -m "adding new pipelines..."
+    git push
     ```
+    Your output should be the following:
+    ![](gifs/git-package-release-update-pl-run.gif)
+    <br>
+    If you go to the `devops-server` repo you created on step 2, you should see a new release with your zip files as shown below:
+    ![](gifs/pipelines-server-release.gif)
+    <br>
+    Now inspect your Kabanero Custom Resource to ensure your `default-kabanero-pipelines.tar.gz` got added to the `pipelines` key value pair.
+    ```bash
+    oc get kabanero -o yaml
+    ```
+    ```yaml
+    stacks:
+      pipelines:
+      - https:
+          url: https://github.com/ibm-garage-ref-storefront/pipelines-server/releases/download/1.0/default-kabanero-pipelines.tar.gz
+        id: pipeline-manager
+        sha256: 8fe10018016e5059640b1a790afe2d6a1ff6c4f54bf3e7e4fa3fc0f82bb2207d
+    ```
+    The pipelines that you added to the `devops-pipelines` repository should now be visible on the tekton dashboard as shown below:
+    ![](img/deploy-storefront-ms-to-openshift.png)
+    <br>
+    ![](img/git-package-release-pl.png)  
 
-
-# Deploy packaged pipelines onto kabanero namespace 
-### Pre-reqs
-You need to create a github 
-[token](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line)
-and need to create a [.gitconfig](../../../../Downloads/devops-demo-kabanero-pipelines-master/.gitconfig) file such as:
-    
-```bash
-~/Documents/devops-demo-kabanero-pipelines/ cat ~/.gitconfig
-
-[user]
-      name = firstname.lastname
-      email = your-github-email@email.com
-[github]
-      token = your-token
-```
-    
-
-You need to fork this repo and clone via https.
-    
-```bash
-git clone https://github.com/ibm-cloud-architecture/devops-demo-kabanero-pipelines 
-cd devops-demo-kabanero-pipelines
-```
-You need another repository to host your pipelines. i.e [pipelines-server](https://github.com/oiricaud/pipeline-server/releases) to create git-releases.
-  
-``` bash
-mkdir pipeline-server
-cd pipeline-server
-git init 
-cat >> README.md
-    Hello this is my pipeline-server repo press (ctrl+d to save)
-git add README.md
-git commit -m "added README.md"
-git push
-```
-
-Now is the time to make any changes you wish to make, or you can use the custom pipelines we have provided for you.
-
-
-[![asciicast](https://asciinema.org/a/315675.svg)](https://asciinema.org/a/315675)
+    Now you can reuse these pipelines across your organization! If your cluster comes down you now have a backup of your pipelines.
 
 # Create a tekton webhook 
 ### Pre-reqs
@@ -557,9 +466,9 @@ Now is the time to make any changes you wish to make, or you can use the custom 
 You need to create an access token on the tekton dashboard or cli in the kabanero namespace.
 Earlier you created a github token on the github dashboard. You will need to get that token or generate another one and 
 paste it below.
-![](../../../../Downloads/devops-demo-kabanero-pipelines-master/gifs/access-token.gif)
+![](/gifs/access-token.gif)
 
-Webhook Settings:
+Web hook Settings:
 
     Name: devops-demo-kabanero-pipelines
     Repistory-url: your forked repo url goes here
@@ -578,19 +487,3 @@ You can but not recommended non-version control your pipelines by running the fo
 ``` bash
 oc apply --recursive --filename pipelines/{pick expiermental, incubator or stable}
 ```
-
-
-# Definitions 
-    Artifactory - is a Binary Repository Manager product from Jfrog.
-    Github Releases - Releases are GitHub's way of packaging and providing software to your users.  
-    Docker - a set of platform as a service products that uses OS-level virtualization to deliver software in packages called containers.
-    Openshift - is a family of containerization software developed by Red Hat.
-    Tekton - a powerful yet flexible Kubernetes-native open-source framework for creating continuous integration and delivery (CI/CD) systems
-    Tekton Events - An EventListener sets up a Kubernetes Service which can be exposed as an OpenShift Route 
-    Tekton TriggerBindings - enable you to capture fields from an event and store them as parameters. 
-    Tekton Templates - defines a Template for how a Pipeline should be run in reaction to events
-    Tekton Pipelines - is an open source project that you can use to configure and run continuous integration and Continuous Delivery pipelines within a Kubernetes cluster.
-    Tekton Steps - A Step is a reference to a container image that executes a specific tool on a specific input and produces a specific output.
-    Tekton Tasks - is a collection of Steps that you define and arrange in a specific order of execution as part of your continuous integration flow. 
-    
-
