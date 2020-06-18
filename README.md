@@ -19,6 +19,7 @@ to a respective host where your Kabanero pipelines exist.
   * [Bound Custom Pipelines to Kabanero Stacks](#bound-custom-pipelines-to-kabanero-stacks)
   * [Host packaged-pipelines on Artifactory](#host-pipelines-on-artifactory)
   * [Host packaged-pipelines on Git Manually](#host-pipelines-on-git-manually)
+  * [How to use git-package-release-update pipeline](#how-to-use-git-package-release-update-pipeline)
   * [Deploy packaged pipelines onto the kabanero namespace](#deploy-packaged-pipelines-onto-kabanero-namespace)
   * [Host pipelines without version control](#deploy-pipelines-without-version-control)
   * [Create tekton webhook](#create-a-tekton-webhook)
@@ -406,6 +407,88 @@ as an asset on github.
 But first, create a new repository i.e named `pipeline-server` on github and follow the steps as shown on the gif.
 ![](../../../../Downloads/devops-demo-kabanero-pipelines-master/gifs/create-release-git.gif)
 
+# How to use git-package-release-update pipeline
+You can use a pipeline to automate the process of extending, packaging and releasing your pipelines via a Git Release. The process is very similar to the section above. The only difference is that we will use a pipeline to automate the tedious steps. You can skip this section if you already did the section before and are not interested in using a pipeline to automate the the process of extending, packaging and releasing your pipelines.
+
+You must set up your repositories:
+1) ***Source*** configurations.
+    You must create a new repo such as `devops-pipelines`. You will be using this repository to build your pipelines. You can clone this [repository](https://github.com/ibm-garage-ref-storefront/devops-pipelines) and add your pipelines to any of the folders `experimental`, `incubator`, `stable`. Create a tekton webhook for this new repo you created.
+
+2) ***Target*** configurations.
+    You must update the `configmap` and `secret` we provided for you. But first, create a new repository such as `devops-server`
+
+    Navigate to `pipelines/incubator/git-package-release-update/configmaps` and update the `pipeline-server-configmap.yaml`
+
+    ```yaml
+    apiVersion: v1
+    kind: ConfigMap
+    metadata:
+    name: pipeline-server-configmap
+    namespace: kabanero
+    data:
+    repo_org: your-github-username-or-org
+    repo_name: your-github-repo-where-you-will-host-pipelines
+    image_registry_publish: 'false'
+    kabanero_pipeline_id: pipeline-manager
+    ```
+
+    Update the secret in `pipelines/incubator/git-package-release-update/secrets/`
+
+    ```yaml
+    apiVersion: v1
+    data:
+    password: your-git-token-encoded
+    username: your-git-username-encoded
+    kind: Secret
+    metadata:
+    name: pipeline-server-git
+    namespace: kabanero
+    type: kubernetes.io/basic-auth
+    ```
+
+More information:
+If you inspect `./pipelines/` you can create a new folder for each new pipeline you have and follow a similar structure as below.
+
+```bash
+.
+├── experimental
+│   └── README.md
+├── incubator
+│   ├── README.md
+│   ├── abc
+│   │   ├── bindings
+│   │   │   ├── abc-pl-pullrequest-binding.yaml
+│   │   │   └── abc-pl-push-binding.yaml
+│   │   ├── configmaps
+│   │   │   └── abc-pl-configmap.yaml
+│   │   ├── pipelines
+│   │   │   └── abc-pl.yaml
+│   │   ├── secrets
+│   │   │   └── abc-pl-secret.yaml
+│   │   ├── tasks
+│   │   │   └── abc-task.yaml
+│   │   └── template
+│   │       └── abc-pl-template.yaml
+│   └── manifest.yaml
+└── stable
+│   ├── README.md
+│   ├── cde
+│   │   ├── bindings
+│   │   │   ├── cde-pl-pullrequest-binding.yaml
+│   │   │   └── cde-pl-push-binding.yaml
+│   │   ├── configmaps
+│   │   │   └── cde-pl-configmap.yaml
+│   │   ├── pipelines
+│   │   │   └── cde-pl.yaml
+│   │   ├── secrets
+│   │   │   └── cde-pl-secret.yaml
+│   │   ├── tasks
+│   │   │   └── cde-task.yaml
+│   │   └── template
+│   │       └── cde-pl-template.yaml
+
+```
+Now drag and drop your pipelines and tasks to any of these folders, remember pipelines in `expermental` do not get built.
 
 # Deploy packaged pipelines onto kabanero namespace 
 ### Pre-reqs
