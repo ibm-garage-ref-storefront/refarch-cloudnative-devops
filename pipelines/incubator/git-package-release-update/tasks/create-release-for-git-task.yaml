@@ -207,7 +207,7 @@ spec:
           host_url=https://github.com/$REPO_ORG/$REPO_NAME/releases/download/$current_version/default-kabanero-pipelines.tar.gz
 
           # get sha256 from previous step on the zip file
-          get_sha=$(< ./256.txt | head -n 1)
+          get_sha=$(cat ./256.txt | head -n 1)
 
           echo "$current_version" "$get_sha"
           # get the add_pipeline_template.json and replace the url, id and sha256 values and store it in another file
