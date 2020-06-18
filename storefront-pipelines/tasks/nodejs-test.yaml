@@ -1,20 +1,20 @@
 apiVersion: tekton.dev/v1alpha1
 kind: Task
 metadata:
-  name: custom-java-spring-boot2-test-task
+  name: custom-nodejs-test-task
 spec:
   inputs:
     resources:
       - name: git-source
-        type: git
+        type: git  
     params:
-      - name: kabanero-springboot2-image
+      - name: js-image
         type: string
-        default: kabanero/java-spring-boot2:0.3
+        default: node:12-stretch
   steps:
     - name: test
       securityContext:
         privileged: true
-      image: $(inputs.params.kabanero-springboot2-image)
-      workingdir: $(inputs.resources.git-source.path)
+      image: $(inputs.params.js-image)
+      workingdir: $(inputs.resources.source.path)
       command: ["/bin/bash", "-c", "$APPSODY_TEST"]
