@@ -7,7 +7,7 @@ set -e
 # expose an extension point for running before main 'package' processing
 exec_hooks $script_dir/ext/pre_package.d
 
-pipelines_dir=$base_dir/pipelines/incubator
+pipelines_dir=$base_dir/pipelines/stable
 
 # directory to store assets for test or release
 assets_dir=$base_dir/ci/assets
