@@ -428,7 +428,7 @@ Pre-requisites:
     
     Now run the following command to be able to retrieve resources for the `kabanero-pipeline` service account.
 
-   ``bash
+   ```bash
     oc adm policy add-cluster-role-to-user view system:serviceaccount:kabanero:kabanero-pipeline
     ```
     
