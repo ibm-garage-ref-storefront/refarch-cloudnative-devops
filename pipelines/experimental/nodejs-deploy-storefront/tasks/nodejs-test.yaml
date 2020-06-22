@@ -1,0 +1,20 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  name: custom-nodejs-test-task
+spec:
+  inputs:
+    resources:
+      - name: git-source
+        type: git  
+    params:
+      - name: js-image
+        type: string
+        default: node:12-stretch
+  steps:
+    - name: test
+      securityContext:
+        privileged: true
+      image: $(inputs.params.js-image)
+      workingdir: $(inputs.resources.source.path)
+      command: ["/bin/bash", "-c", "$APPSODY_TEST"]
