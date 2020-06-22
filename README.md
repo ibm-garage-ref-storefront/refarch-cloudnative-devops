@@ -487,3 +487,4 @@ You can but not recommended non-version control your pipelines by running the fo
 ``` bash
 oc apply --recursive --filename pipelines/{pick expiermental, incubator or stable}
 ```
+
