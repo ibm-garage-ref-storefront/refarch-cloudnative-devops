@@ -395,7 +395,7 @@ Pre-requisites:
     ```
     Now drag and drop your pipelines and tasks to any of these folders, remember pipelines in `expermental` do not get built.
 
-2) You must update the `configmap` and `secret` we provided for you. But first, create another repository such as `devops-server`. In this repo `devops-server` you will be hosting your pipelines as Git releases. Do not forget to create a README.md file. 
+2) You must update the `configmap` and `secret` we provided for you. But first, create another repository such as `devops-server`. In this repo `devops-server` you will be hosting your pipelines as Git releases. Do not forget to create a README.md file.
 
     Navigate to `pipelines/incubator/git-package-release-update/configmaps` and update the `pipeline-server-configmap.yaml`
 
@@ -425,6 +425,13 @@ Pre-requisites:
         password: your-git-token-encoded
         username: your-git-username-encoded
     ```
+    
+    Now run the following command to be able to retrieve resources for the `kabanero-pipeline` service account.
+
+   ``bash
+    oc adm policy add-cluster-role-to-user view system:serviceaccount:kabanero:kabanero-pipeline
+    ```
+    
 3) Create web hook for the `devops-pipelines` repository you created on step 1.
 
 4) Deploy your pipeline, tasks, event bindings and trigger templates by running the following command in the `devops-pipelines` repo you created on step 1:
