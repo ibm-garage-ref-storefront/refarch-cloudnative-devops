@@ -9,6 +9,10 @@ spec:
       description: Specify the Github organization to deploy the microservices to
       name: github_org
       type: string
+    - default: your-github-token
+      description: Specify the Github token! Ensure token has access to orgs
+      name: github_token
+      type: string
     - default: or
       description: Specify the users' github initials
       name: github_initials
@@ -16,6 +20,8 @@ spec:
   tasks:
     - name: clone-storefront-repo-automator
       params:
+        - name: github_token
+          value: $(params.github_token)
         - name: github_org
           value: $(params.github_org)
         - name: github_initials
