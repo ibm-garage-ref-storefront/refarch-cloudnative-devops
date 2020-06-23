@@ -5,7 +5,7 @@ metadata:
 spec:
   inputs:
     resources:
-      - name: git-source
+      - name: source
         type: git  
     params:
       - name: js-image

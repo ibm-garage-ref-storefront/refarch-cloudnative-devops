@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1alpha1
 kind: Task
 metadata:
-  name: igc-health-check
+  name: custom-nodejs-health-check-task
   labels:
     version: 0.0.0
 spec:

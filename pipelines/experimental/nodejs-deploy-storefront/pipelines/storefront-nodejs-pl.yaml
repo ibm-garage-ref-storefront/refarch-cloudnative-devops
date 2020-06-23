@@ -43,7 +43,7 @@ spec:
     - sonarqube-task
     taskRef:
       kind: Task
-      name: custom-java-spring-boot2-test-task
+      name: custom-nodejs-test-task
   - name: build-push-task
     resources:
       inputs:
@@ -58,7 +58,7 @@ spec:
     - test-task
     taskRef:
       kind: Task
-      name: java-spring-boot2-build-push-task
+      name: nodejs-build-push-task
   - name: image-scan-task
     resources:
       inputs:
@@ -70,10 +70,10 @@ spec:
     - build-push-task
     taskRef:
       kind: Task
-      name: java-spring-boot2-image-scan-task
+      name: nodejs-image-scan-task
   - name: deploy-task
     conditions:
-    - conditionRef: java-spring-boot2-deployment-condition
+    - conditionRef: nodejs-deployment-condition
       params:
       - name: event-type
         value: $(params.event-type)
@@ -91,17 +91,19 @@ spec:
     - image-scan-task
     taskRef:
       kind: Task
-      name: java-spring-boot2-deploy-task
+      name: nodejs-deploy-task
   - name: health-check-task
     resources:
       inputs:
         - name: git-source
           resource: git-source
+        - name: image
+          resource: docker-image
     runAfter:
     - test-task
     taskRef:
       kind: Task
-      name: custom-java-spring-boot2-health-check-task
+      name: custom-nodejs-health-check-task
   - name: gitops-task
     resources:
       inputs:
@@ -113,4 +115,4 @@ spec:
     - health-check-task
     taskRef:
       kind: Task
-      name: custom-java-spring-boot2-gitops-task
+      name: custom-nodejs-gitops-task
