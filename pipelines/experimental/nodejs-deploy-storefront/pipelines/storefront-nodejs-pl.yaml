@@ -104,15 +104,15 @@ spec:
     taskRef:
       kind: Task
       name: custom-nodejs-health-check-task
-  - name: gitops-task
-    resources:
-      inputs:
-        - name: git-source
-          resource: git-source
-        - name: docker-image
-          resource: docker-image
-    runAfter:
-    - health-check-task
-    taskRef:
-      kind: Task
-      name: custom-nodejs-gitops-task
+  # - name: gitops-task
+  #   resources:
+  #     inputs:
+  #       - name: git-source
+  #         resource: git-source
+  #       - name: docker-image
+  #         resource: docker-image
+  #   runAfter:
+  #   - health-check-task
+  #   taskRef:
+  #     kind: Task
+  #     name: custom-nodejs-gitops-task

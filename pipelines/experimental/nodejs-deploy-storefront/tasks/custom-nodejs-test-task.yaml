@@ -5,7 +5,7 @@ metadata:
 spec:
   inputs:
     resources:
-      - name: source
+      - name: git-source
         type: git  
     params:
       - name: js-image
@@ -16,5 +16,5 @@ spec:
       securityContext:
         privileged: true
       image: $(inputs.params.js-image)
-      workingdir: $(inputs.resources.source.path)
+      workingdir: $(inputs.resources.git-source.path)
       command: ["/bin/bash", "-c", "$APPSODY_TEST"]
