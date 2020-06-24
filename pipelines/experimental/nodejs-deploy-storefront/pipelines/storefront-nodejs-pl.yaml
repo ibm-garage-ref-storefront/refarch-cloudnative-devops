@@ -10,6 +10,9 @@ spec:
   - description: The event ref
     name: event-ref
     type: string
+  - description: Name of gitRepo
+    name: gitRepo
+    type: string
   resources:
   - name: git-source
     type: git
@@ -93,26 +96,27 @@ spec:
       kind: Task
       name: nodejs-deploy-task
   - name: health-check-task
+    params:
+      - name: gitRepo
+        value: $(params.gitRepo)
     resources:
       inputs:
         - name: git-source
           resource: git-source
-        - name: image
-          resource: docker-image
     runAfter:
-    - test-task
+      - deploy-task
     taskRef:
       kind: Task
       name: custom-nodejs-health-check-task
-  # - name: gitops-task
-  #   resources:
-  #     inputs:
-  #       - name: git-source
-  #         resource: git-source
-  #       - name: docker-image
-  #         resource: docker-image
-  #   runAfter:
-  #   - health-check-task
-  #   taskRef:
-  #     kind: Task
-  #     name: custom-nodejs-gitops-task
+  - name: gitops-task
+    resources:
+      inputs:
+        - name: git-source
+          resource: git-source
+        - name: docker-image
+          resource: docker-image
+    runAfter:
+    - health-check-task
+    taskRef:
+      kind: Task
+      name: custom-nodejs-gitops-task

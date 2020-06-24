@@ -2,59 +2,90 @@ apiVersion: tekton.dev/v1alpha1
 kind: Task
 metadata:
   name: custom-nodejs-health-check-task
-  labels:
-    version: 0.0.0
+  namespace: kabanero
 spec:
   inputs:
+    params:
+      - default: 'googlefu/apic_compiler:v3-amd64'
+        name: tools-image
+        type: string
+      - name: gitRepo
+        type: string
     resources:
       - name: git-source
         type: git
-      - name: image
-        type: image
-    params:
-      - name: js-image
-        type: string
-        default: docker.io/node:12-stretch
-      - name: tools-image
-        type: string
-        default: garagecatalyst/ibmcloud-dev:1.0.10
   steps:
-    - name: health-check
-      image: $(inputs.params.tools-image)
-      workingdir: $(inputs.resources.git-source.path)
-      env:
-        - name: NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
-      envFrom:
-        - configMapRef:
-            name: ibmcloud-config
-      command: ["/bin/bash"]
-      args:
-        - -c
-        - |
-          ENVIRONMENT_NAME="${NAMESPACE}"
-          IMAGE_NAME=$(basename -s .git `git config --get remote.origin.url` | tr '[:upper:]' '[:lower:]' | sed 's/_/-/g')
-          if [[ "${CLUSTER_TYPE}" == "openshift" ]]; then
-              ROUTE_HOST=$(kubectl get route/${IMAGE_NAME} --namespace ${ENVIRONMENT_NAME} --output=jsonpath='{ .spec.host }')
-              URL="https://${ROUTE_HOST}"
-          else
-              INGRESS_HOST=$(kubectl get ingress/${IMAGE_NAME} --namespace ${ENVIRONMENT_NAME} --output=jsonpath='{ .spec.rules[0].host }')
-              URL="http://${INGRESS_HOST}"
-          fi
+    - args:
+        - '-c'
+        - >
+          set -e
+
+          apt-get install -y jq curl
+
+          repoName="$(git config --get remote.origin.url | cut -d/ -f5 | cut -d. -f1)"
+
+          echo ${repoName}
+
+          
+
+        
+
+
+          # Check deployment rollout status every 10 seconds (max 10 minutes) until complete.
+
+          ATTEMPTS=0
+
+          ROLLOUT_STATUS_CMD="oc rollout status
+          deployment/${repoName} -n ${NAMESPACE}"
+
+          until $ROLLOUT_STATUS_CMD || [ $ATTEMPTS -eq 60 ]; do
+            $ROLLOUT_STATUS_CMD
+            ATTEMPTS=$((attempts + 1))
+            sleep 10
+          done
+
+
+          ROUTE_HOST=$(oc get route/${repoName} --namespace
+          ${NAMESPACE} --output=jsonpath='{ .spec.host }')
+
+          URL="http://${ROUTE_HOST}"
+
+          echo $URL
+
+
           sleep_countdown=5
+
+
           # sleep for 10 seconds to allow enough time for the server to start
+
           sleep 10
+
+
           echo "Health check start"
-          while [[ $(curl -sL -w "%{http_code}\\n" "${URL}/health" -o /dev/null --connect-timeout 3 --max-time 5 --retry 3 --retry-max-time 30) != "200" ]]; do
+
+          while [[ $(curl -sL -w "%{http_code}\\n"
+          "${URL}/micro/actuator/health" -o /dev/null --connect-timeout 3
+          --max-time 5 --retry 3 --retry-max-time 30) != "200" ]]; do
               sleep 30
               echo "Health check failure. Remaining retries: $sleep_countdown"
               sleep_countdown=$((sleep_countdown-1))
               if [[ $sleep_countdown -eq 0 ]]; then
-                      echo "Could not reach health endpoint: ${URL}/health"
+                      echo "Could not reach health endpoint: ${URL}/micro/actuator/health"
                       exit 1;
               fi
           done
-          echo "Successfully reached health endpoint: ${URL}/health"
-          echo "====================================================================="
+
+          echo "Successfully reached health endpoint:
+          ${URL}/micro/actuator/health"
+
+          echo
+          "====================================================================="
+      command:
+        - /bin/bash
+      env:
+        - name: NAMESPACE
+          value: storefront
+      image: $(inputs.params.tools-image)
+      name: health-check
+      resources: {}
+      workingDir: $(inputs.resources.git-source.path)
