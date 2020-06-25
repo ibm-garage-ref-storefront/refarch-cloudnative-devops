@@ -4,7 +4,7 @@ metadata:
   name: pipeline-server-configmap
   namespace: kabanero
 data:
-  repo_org: your-git-repo-org
-  repo_name: your-git-repo-name
+  repo_org: ibm-garage-ref-storefront
+  repo_name: pipelines-server
   image_registry_publish: 'false'
   kabanero_pipeline_id: pipeline-manager

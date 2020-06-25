@@ -1,1 +1,1 @@
-# Pipelines that are not production-ready and require further development to satisfy the stable criteria.
+# Pipelines that are production-ready and satisfy the stable criteria.
