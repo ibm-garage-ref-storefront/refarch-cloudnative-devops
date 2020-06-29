@@ -2,6 +2,8 @@ apiVersion: tekton.dev/v1alpha1
 kind: Task
 metadata:
   name: custom-java-spring-boot2-sonarqube-task
+  namespace: kabanero
+  author: Hemankita Perabathini
 spec:
   inputs:
     resources:

@@ -2,6 +2,8 @@ apiVersion: tekton.dev/v1alpha1
 kind: Pipeline
 metadata:
   name: storefront-springboot-pl
+  namespace: kabanero
+  author: Hemankita Perabathini
 spec:
   params:
   - description: The event type
