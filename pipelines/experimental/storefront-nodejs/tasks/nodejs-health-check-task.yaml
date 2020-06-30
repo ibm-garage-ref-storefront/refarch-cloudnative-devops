@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1alpha1
 kind: Task
 metadata:
-  name: custom-nodejs-health-check-task
+  name: nodejs-health-check-task
   namespace: kabanero
 spec:
   inputs:

@@ -36,7 +36,7 @@ spec:
     - validate-stack-task
     taskRef:
       kind: Task
-      name: custom-nodejs-sonarqube-task
+      name: nodejs-sonarqube-task
   - name: test-task
     resources:
       inputs:
@@ -46,7 +46,7 @@ spec:
     - sonarqube-task
     taskRef:
       kind: Task
-      name: custom-nodejs-test-task
+      name: nodejs-test-task
   - name: build-push-task
     resources:
       inputs:
@@ -107,7 +107,7 @@ spec:
       - deploy-task
     taskRef:
       kind: Task
-      name: custom-nodejs-health-check-task
+      name: nodejs-health-check-task
   - name: gitops-task
     resources:
       inputs:
@@ -119,4 +119,4 @@ spec:
     - health-check-task
     taskRef:
       kind: Task
-      name: custom-nodejs-gitops-task
+      name: nodejs-gitops-task

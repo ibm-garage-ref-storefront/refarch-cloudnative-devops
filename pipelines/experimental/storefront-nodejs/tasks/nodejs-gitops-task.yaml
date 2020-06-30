@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1alpha1
 kind: Task
 metadata:
-  name: custom-nodejs-gitops-task
+  name: nodejs-gitops-task
 spec:
   inputs:
     resources:

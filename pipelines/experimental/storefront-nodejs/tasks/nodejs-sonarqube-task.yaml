@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1alpha1
 kind: Task
 metadata:
-  name: custom-nodejs-sonarqube-task
+  name: nodejs-sonarqube-task
   namespace: kabanero
 spec:
   inputs:

@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1alpha1
 kind: Task
 metadata:
-  name: custom-nodejs-test-task
+  name: nodejs-test-task
 spec:
   inputs:
     resources:
