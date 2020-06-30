@@ -8,7 +8,7 @@ spec:
   inputs:
     params:
       - name: package-manager-image
-        default: googlefu/oscar-image:v3.0
+        default: googlefu/oscar-image:v5.0
         type: string
       - name: registry
         description: Specify the name of the project being built.
@@ -19,7 +19,7 @@ spec:
       - name: image
         type: image
   steps:
-    - name: setup-environment
+    - name: package-pipelines
       image: $(inputs.params.package-manager-image)
       script: |
         cd ci
@@ -60,7 +60,7 @@ spec:
 
           echo "REPO_ORG: $REPO_ORG"
           echo "REPO_NAME: $REPO_NAME"
-
+          
           # Get webhook repo details
           curl -s https://api.github.com/repos/"$REPO_ORG"/"$REPO_NAME"/releases/latest > repo_details.json
 
@@ -83,8 +83,10 @@ spec:
           fi
           
           echo "new git release version: " $new_version
-
-          curl --data "$(get_release_info)" "https://api.github.com/repos/$REPO_ORG/$REPO_NAME/releases?access_token=$GITHUB_TOKEN"
+          echo "get release info" "$(get_release_info)"
+          url=https://api.github.com/repos/${REPO_ORG}/${REPO_NAME}/releases?access_token=${GITHUB_TOKEN}
+          printf %s "${url//[[:space:]]/}" | xxd
+          curl -v --data "$(get_release_info)" "${url//[[:space:]]/}"
 
           echo "Success! Created a new release version" "$new_version" "on https://www.github.com/""$REPO_ORG"/"$REPO_NAME" 
       env:
@@ -166,7 +168,10 @@ spec:
           }
 
           GH_ASSET="https://uploads.github.com/repos/$REPO_ORG/$REPO_NAME/releases/$id/assets?name=$(basename $filename)"
-          curl --data-binary @"$filename" -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/octet-stream" "$GH_ASSET"
+
+          echo "GH_ASSET ${GH_ASSET}"
+          curl --data-binary @"$filename" -H "Authorization: token ${GITHUB_TOKEN//[[:space:]]/}" -H "Content-Type: application/octet-stream" ${GH_ASSET//[[:space:]]/}
+
           echo "Success! Uploading an asset to github release version" "$current_version" on "https://github.com/"$REPO_ORG/$REPO_NAME
 
       env:

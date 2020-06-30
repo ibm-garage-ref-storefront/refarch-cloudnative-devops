@@ -9,19 +9,14 @@ spec:
   params:
     - default: other
       name: event-ref
-
     - description: The revision of your Git repository
       name: gitrevision
-
     - description: The url of your Git repository
       name: gitrepositoryurl
-
     - description: The url of your pull request
       name: gitpullrequesturl
-
     - description: The server name in the Git url
       name: webhooks-tekton-git-server
-
     - description: The org name in the Git url
       name: webhooks-tekton-git-org
     - description: The repository name in the Git url
