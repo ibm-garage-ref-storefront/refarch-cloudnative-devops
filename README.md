@@ -22,23 +22,6 @@ to a respective host where your Kabanero pipelines exist.
 
 This repository includes 2 [directories](/pipelines), `experimental`(pipelines that are not production-ready and are considered, proof of concept), and `stable`(pipelines that are production ready). It also includes the following pipelines:
 
-<style>
-    table th:first-of-type {
-        width: 10%;
-    }
-    table th:nth-of-type(2) {
-        width: 10%;
-    }
-    table th:nth-of-type(3) {
-        width: 50%;
-    }
-    table th:nth-of-type(4) {
-        width: 30%;
-    }
-</style>
-
-<div class="foo">
-
 | Stable  | Description  |
 |---|---|
 | artifactory-package-release-update  |  Compress custom pipelines, upload compressed pipelines to artifactory, and updates the Kabanero Custom Resource |
@@ -48,10 +31,8 @@ This repository includes 2 [directories](/pipelines), `experimental`(pipelines t
 
 | Incubator  | Description  |
 |---|---|
-| cloud-foundry  |  Deploys an application to cloud foundry using CloudFoundry CLI  |
-| deploy-app-ibm-cloud  |  Deploys an application to cloud foundry using the IBM CLI |
-
-</div>
+| cloud-foundry  |  Deploys an application to cloud foundry given a specific namespace using CloudFoundry CLI  |
+| deploy-app-ibm-cloud  |  Deploys an application to cloud foundry  given a specific namespace using the IBM CLI |
 
  
    
