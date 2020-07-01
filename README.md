@@ -49,11 +49,12 @@ This repository includes 2 [directories](/pipelines), `experimental`(pipelines t
 
 # How to use artifactory-package-release-update pipeline
 ### Pre-reqs
-- You need to deploy [Artifactory](https://github.com/ibm-cloud-architecture/gse-devops/tree/master/cloudpak-for-integration-tekton-pipelines#artifactory) on your Openshift cluster
+- Fork the [devops-pipelines](https://github.com/ibm-garage-ref-storefront/devops-pipelines) repository
+- Deploy [Artifactory](https://github.com/ibm-cloud-architecture/gse-devops/tree/master/cloudpak-for-integration-tekton-pipelines#artifactory) on your Openshift cluster
 
-- You need to generate an [API Key](https://www.jfrog.com/confluence/display/JFROG/User+Profile). 
-- You need to update the artifactory config map
-[artifactory-config.yaml](../../../../devops-demo-kabanero-pipelines-master/configmaps/artifactory-config.yaml) and update the `artifactory_key`. Once done, run the following
+- Generate an [API Key](https://www.jfrog.com/confluence/display/JFROG/User+Profile). 
+- Update Artifactory config map
+[artifactory-config.yaml](./pipelines/stable/artifactory-package-release-update/configmaps/artifactory-config.yaml) and update the `artifactory_key`. Once done, run the following
 commands:
 
     ```bash
@@ -141,7 +142,7 @@ You can use a pipeline to automate the process of extending, packaging and relea
 
 3) You must update the `configmap` and `secret` we provided for you. But first, create another repository such as `devops-server`. In this repo `devops-server` you will be hosting your pipelines as Git releases. Do not forget to create a README.md file.
 
-    Navigate to `pipelines/incubator/git-package-release-update/configmaps` and update the `pipeline-server-configmap.yaml`
+    Navigate to `pipelines/stable/git-package-release-update/configmaps` and update the `pipeline-server-configmap.yaml`
 
     ```yaml
     apiVersion: v1
@@ -156,7 +157,7 @@ You can use a pipeline to automate the process of extending, packaging and relea
         kabanero_pipeline_id: pipeline-manager
     ```
 
-    Update the secret in `pipelines/incubator/git-package-release-update/secrets/`
+    Update the secret in `pipelines/stable/git-package-release-update/secrets/`
 
     ```yaml
     apiVersion: v1
@@ -181,7 +182,7 @@ You can use a pipeline to automate the process of extending, packaging and relea
 5) Deploy your pipeline, tasks, event bindings and trigger templates by running the following command in the `devops-pipelines` repo you created on step 1:
 
     ```bash
-    oc apply --recursive --filename pipelines/incubator/git-package-release-update
+    oc apply --recursive --filename pipelines/stable/git-package-release-update
     git add .
     git commit -m "adding new pipelines..."
     git push
