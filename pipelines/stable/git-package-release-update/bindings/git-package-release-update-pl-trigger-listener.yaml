@@ -5,27 +5,39 @@ metadata:
   namespace: tekton-pipelines
 spec:
   serviceAccountName: pipeline
-  triggers:
-    - name: github-release-listener
-      interceptors:
-        - github:
-            eventTypes:
-              - release
-        - cel:
-            filter: "body.action in ['published', 'unpublished', 'created', 'edited', 'deleted', 'prereleased', 'released']"
-      bindings:
-        - ref: git-package-release-update-pl-push-binding
-      template:
-        name: git-package-release-update-pl-template
-    - name: github-push-listener
-      interceptors:
-        - github:
-            eventTypes:
-              - push
-        - cel:
-            filter: "body.ref == 'refs/heads/master'"
-      bindings:
-        - ref: git-package-release-update-pl-push-binding
-      template:
-        name: git-package-release-update-pl-template
+  # triggers:
+  #   - name: github-release-listener
+  #     interceptors:
+  #       - github:
+  #           eventTypes:
+  #             - release
+  #       - cel:
+  #           filter: "body.action in ['published', 'unpublished', 'created', 'edited', 'deleted', 'prereleased', 'released']"
+  #     bindings:
+  #       - ref: git-package-release-update-pl-push-binding
+  #     template:
+  #       name: git-package-release-update-pl-template
+  #   - name: github-push-listener
+  #     interceptors:
+  #       - github:
+  #           eventTypes:
+  #             - push
+  #       - cel:
+  #           filter: "body.ref == 'refs/heads/master'"
+  #     bindings:
+  #       - ref: git-package-release-update-pl-push-binding
+  #     template:
+  #       name: git-package-release-update-pl-template
         
+  triggers:
+    - name: pipeline-manager-trig
+      bindings:
+        - ref: git-package-release-update-pl-push-binding
+      template:
+        name: git-package-release-update-pl-template
+      interceptors:
+        - cel:
+            filter: "(header.match('X-GitHub-Event', 'push') && body.ref == 'refs/heads/master'"
+            overlays:
+              - key: extensions.truncated_sha
+                expression: "body.head_commit.id.truncate(7)"
