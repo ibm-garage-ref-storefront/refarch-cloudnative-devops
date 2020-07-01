@@ -2,17 +2,18 @@ apiVersion: triggers.tekton.dev/v1alpha1
 kind: EventListener
 metadata:
   name: pipeline-manager
+  namespace: tekton-pipelines
 spec:
   serviceAccountName: pipeline
   triggers:
-    - name: pipeline-manager-trig
+    - name: pipeline-manager-push-trig
       bindings:
         - ref: git-package-release-update-pl-push-binding
       template:
         name: git-package-release-update-pl-template
       interceptors:
         - cel:
-            filter: "header.match('X-GitHub-Event', 'push') && body.ref == 'refs/heads/master'"
+            filter: "header.match('X-GitHub-Event', 'push') && body.ref == 'refs/heads/master' && body.action != 'published'"
             overlays:
               - key: extensions.truncated_sha
                 expression: "body.head_commit.id.truncate(7)"
