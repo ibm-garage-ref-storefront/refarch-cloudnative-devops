@@ -20,71 +20,47 @@ spec:
         - >
           set -e
 
-          apt-get install -y jq curl
+          apt-get update && apt-get install -y jq curl
+
+          oc whoami
 
           repoName="$(git config --get remote.origin.url | cut -d/ -f5 | cut -d. -f1)"
 
-          echo ${repoName}
+          echo "repo name ${repoName}"
 
+          # get routes and create a json file 
+
+          oc get routes -n "${NAMESPACE}" -o json > routes.json
+
+          # look in the json file and get the web url 
+
+          route=$(jq '.items | .[].spec.host | select(contains("storefront-ui"))' ./routes.json) 
+
+          temp=$(echo "$route" | tr -d '"')
+
+          echo "$temp"
+
+          curl "http://${temp}/_healthchecks" > health-endpoint.json
+
+          cat health-endpoint.json
+
+          # check if there are any failed key value pairs 
           
+          did_health_status_failed=$(jq '.["failed"] == []' ./health-endpoint.json)
 
-        
+          if [ "$did_health_status_failed" = "true" ]; then
+              echo Health Status OK
+          else
+              echo ERROR: There was a problem in the health status, please check the health-endpoint.json file
+              exit 1
+          fi
 
-
-          # Check deployment rollout status every 10 seconds (max 10 minutes) until complete.
-
-          ATTEMPTS=0
-
-          ROLLOUT_STATUS_CMD="oc rollout status
-          deployment/${repoName} -n ${NAMESPACE}"
-
-          until $ROLLOUT_STATUS_CMD || [ $ATTEMPTS -eq 60 ]; do
-            $ROLLOUT_STATUS_CMD
-            ATTEMPTS=$((attempts + 1))
-            sleep 10
-          done
-
-
-          ROUTE_HOST=$(oc get route/${repoName} --namespace
-          ${NAMESPACE} --output=jsonpath='{ .spec.host }')
-
-          URL="http://${ROUTE_HOST}"
-
-          echo $URL
-
-
-          sleep_countdown=5
-
-
-          # sleep for 10 seconds to allow enough time for the server to start
-
-          sleep 10
-
-
-          echo "Health check start"
-
-          while [[ $(curl -sL -w "%{http_code}\\n"
-          "${URL}/micro/actuator/health" -o /dev/null --connect-timeout 3
-          --max-time 5 --retry 3 --retry-max-time 30) != "200" ]]; do
-              sleep 30
-              echo "Health check failure. Remaining retries: $sleep_countdown"
-              sleep_countdown=$((sleep_countdown-1))
-              if [[ $sleep_countdown -eq 0 ]]; then
-                      echo "Could not reach health endpoint: ${URL}/micro/actuator/health"
-                      exit 1;
-              fi
-          done
-
-          echo "Successfully reached health endpoint:
-          ${URL}/micro/actuator/health"
-
-          echo
-          "====================================================================="
+          echo "====================================================================="
       command:
         - /bin/bash
       env:
         - name: NAMESPACE
-          value: storefront
+          value: storefront-dev
       image: $(inputs.params.tools-image)
       name: health-check
       resources: {}

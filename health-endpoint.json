@@ -1,0 +1,1 @@
+{"passed":[{"url":"/","elapsed":"14 ms","expectedContent":["IBM Cloud Architecture"],"statusCode":200},{"url":"/catalog/","elapsed":"64 ms","expectedContent":["Dayton Meat Chopper"],"statusCode":200},{"url":"/stylesheets/font-awesome/font-awesome.css","elapsed":"11 ms","expectedContent":["@font-face"],"statusCode":200}],"failed":[]}
