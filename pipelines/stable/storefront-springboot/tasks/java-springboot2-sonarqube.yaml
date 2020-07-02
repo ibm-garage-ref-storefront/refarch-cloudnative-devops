@@ -45,6 +45,8 @@ spec:
           set -e
           if [ -z "${SONARQUBE_URL}" ]; then
               echo "Skipping SonarQube tests - SonarQube not configured"
+          elif [ "${SONARQUBE_URL}" == "url" ]; then
+              echo "Skipping SonarQube tests - SonarQube not configured"
           elif [ -z "${SONARQUBE_USER}" || -z "${SONARQUBE_PASSWORD}"]; then
               echo "Skipping SonarQube tests - SonarQube credentials not found"
           else
