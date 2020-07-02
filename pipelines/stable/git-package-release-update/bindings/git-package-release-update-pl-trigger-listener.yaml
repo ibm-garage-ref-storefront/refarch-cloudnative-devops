@@ -12,7 +12,7 @@ spec:
         name: git-package-release-update-pl-template
       interceptors:
         - cel:
-            filter: "header.match('X-GitHub-Event', 'push') && body.ref == 'refs/heads/master'"
+            filter: "(header.match('X-GitHub-Event', 'push') && body.ref == 'refs/heads/master'"
             overlays:
               - key: extensions.truncated_sha
                 expression: "body.head_commit.id.truncate(7)"
