@@ -48,8 +48,8 @@ spec:
   - name: pact-task
     resources:
       inputs:
-        - name: git-source
-          resource: git-source
+      - name: git-source
+        resource: git-source
     runAfter:
     - test-task
     taskRef:
