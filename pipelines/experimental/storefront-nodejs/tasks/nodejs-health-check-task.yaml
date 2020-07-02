@@ -9,8 +9,6 @@ spec:
       - default: 'googlefu/apic_compiler:v3-amd64'
         name: tools-image
         type: string
-      - name: gitRepo
-        type: string
     resources:
       - name: git-source
         type: git

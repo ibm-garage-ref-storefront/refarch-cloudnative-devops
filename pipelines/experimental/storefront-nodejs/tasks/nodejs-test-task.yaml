@@ -2,6 +2,7 @@ apiVersion: tekton.dev/v1alpha1
 kind: Task
 metadata:
   name: nodejs-test-task
+  namespace: kabanero
 spec:
   inputs:
     resources:

@@ -2,6 +2,7 @@ apiVersion: tekton.dev/v1alpha1
 kind: Pipeline
 metadata:
   name: storefront-nodejs-pl
+  namespace: kabanero
 spec:
   params:
   - description: The event type
@@ -9,9 +10,6 @@ spec:
     type: string
   - description: The event ref
     name: event-ref
-    type: string
-  - description: Name of gitRepo
-    name: gitRepo
     type: string
   resources:
   - name: git-source
@@ -47,6 +45,16 @@ spec:
     taskRef:
       kind: Task
       name: nodejs-test-task
+  - name: pact-task
+    resources:
+      inputs:
+        - name: git-source
+          resource: git-source
+    runAfter:
+    - test-task
+    taskRef:
+      kind: Task
+      name: nodejs-pact-broker-task
   - name: build-push-task
     resources:
       inputs:
@@ -58,7 +66,7 @@ spec:
       - name: git-source
         resource: git-source
     runAfter:
-    - test-task
+    - pact-task
     taskRef:
       kind: Task
       name: nodejs-build-push-task
@@ -96,9 +104,6 @@ spec:
       kind: Task
       name: nodejs-deploy-task
   - name: health-check-task
-    params:
-      - name: gitRepo
-        value: $(params.gitRepo)
     resources:
       inputs:
         - name: git-source

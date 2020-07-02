@@ -2,6 +2,8 @@ apiVersion: tekton.dev/v1alpha1
 kind: Task
 metadata:
   name: nodejs-gitops-task
+  namespace: kabanero
+  author: Oscar I. Ricaud
 spec:
   inputs:
     resources:
@@ -36,17 +38,19 @@ spec:
         - |
           set -e
 
-          # echo "TestImage: test" > randomtext.txt
+          echo "Cloning the below repository"
+          repoName="$(git config --get remote.origin.url | cut -d/ -f5 | cut -d. -f1)"
+          echo "repo name ${repoName}"
 
           # clone repo
           git clone https://github.com/ibm-garage-ref-storefront/gitops-dev.git
-          cd gitops-dev/Inventory
+          cd gitops-dev/${repoName}
 
           # update value for key applicationImage
-          sed -i '/image:/c\        image: $(inputs.resources.docker-image.url)' ./deployment.yaml
+          sed -i '/applicationImage:/c\  applicationImage: $(inputs.resources.docker-image.url)' ./appsody/app-deploy.yaml
 
           # verify the value for key applicationImage got updated
-          cat ./deployment.yaml | grep "image"
+          cat ./appsody/app-deploy.yaml | grep "image"
 
           # This email is not used and it is not valid, you can ignore but git requires it
           git config --global user.email "tekton_ci@storefront.com"
