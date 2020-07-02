@@ -48,7 +48,7 @@ spec:
           cd gitops-dev/$(inputs.params.gitRepo)
 
           # update value for key applicationImage
-          sed -i '/image:/c\        image: $(inputs.resources.docker-image.url)' ./appsody/app-deploy.yaml
+          sed -i '/applicationImage:/c\  applicationImage: $(inputs.resources.docker-image.url)' ./appsody/app-deploy.yaml
 
           # verify the value for key applicationImage got updated
           cat ./appsody/app-deploy.yaml | grep "image"
