@@ -1,0 +1,21 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  name: nodejs-test-task
+  namespace: kabanero
+spec:
+  inputs:
+    resources:
+      - name: git-source
+        type: git  
+    params:
+      - name: js-image
+        type: string
+        default: node:12-stretch
+  steps:
+    - name: test
+      securityContext:
+        privileged: true
+      image: $(inputs.params.js-image)
+      workingdir: $(inputs.resources.git-source.path)
+      command: ["/bin/bash", "-c", "$APPSODY_TEST"]

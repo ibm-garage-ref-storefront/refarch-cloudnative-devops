@@ -1,0 +1,63 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  name: nodejs-pact-broker-task
+  namespace: kabanero
+  labels:
+    version: 0.0.0
+spec:
+  inputs:
+    resources:
+      - name: git-source
+        type: git
+    params:
+      - name: js-image
+        type: string
+        default: node:12-stretch
+  stepTemplate:
+    envFrom:
+      - configMapRef:
+          name: pactbroker-config
+          optional: true
+  steps:
+    - name: build
+      image: $(inputs.params.js-image)
+      workingdir: $(inputs.resources.git-source.path)
+      command: ["/bin/bash"]
+      args:
+        - -c
+        - |
+          set -e
+          npm install
+          if [ -d client ]; then
+            pushd client
+            npm install
+            popd
+          fi
+          npm run build --if-present
+    - name: publish-pact
+      image: $(inputs.params.js-image)
+      workingdir: $(inputs.resources.git-source.path)
+      command: ["/bin/bash"]
+      args:
+        - -c
+        - |
+          set -e
+          if [ -n "${PACTBROKER_URL}" ]; then
+              npm run pact:publish --if-present
+          else 
+              echo "Skipping Pact publish"
+          fi
+    - name: verify-pact
+      image: $(inputs.params.js-image)
+      workingdir: $(inputs.resources.git-source.path)
+      command: ["/bin/bash"]
+      args:
+        - -c
+        - |
+          set -e
+          if [ -n "${PACTBROKER_URL}" ]; then
+              npm run pact:verify --if-present
+          else 
+              echo "Skipping Pact publish"
+          fi

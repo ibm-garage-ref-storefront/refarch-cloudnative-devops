@@ -1,0 +1,65 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  name: nodejs-health-check-task
+  namespace: kabanero
+spec:
+  inputs:
+    params:
+      - default: 'googlefu/apic_compiler:v3-amd64'
+        name: tools-image
+        type: string
+    resources:
+      - name: git-source
+        type: git
+  steps:
+    - args:
+        - '-c'
+        - >
+          set -e
+
+          apt-get update && apt-get install -y jq curl
+
+          oc whoami
+
+          repoName="$(git config --get remote.origin.url | cut -d/ -f5 | cut -d. -f1)"
+
+          echo "repo name ${repoName}"
+
+          # get routes and create a json file 
+
+          oc get routes -n "${NAMESPACE}" -o json > routes.json
+
+          # look in the json file and get the web url 
+
+          route=$(jq '.items | .[].spec.host | select(contains("storefront-ui"))' ./routes.json) 
+
+          temp=$(echo "$route" | tr -d '"')
+
+          echo "$temp"
+
+          curl "http://${temp}/_healthchecks" > health-endpoint.json
+
+          cat health-endpoint.json
+
+          # check if there are any failed key value pairs 
+          
+          did_health_status_failed=$(jq '.["failed"] == []' ./health-endpoint.json)
+
+          if [ "$did_health_status_failed" = "true" ]; then
+              echo Health Status OK
+          else
+              echo ERROR: There was a problem in the health status, please check the health-endpoint.json file
+              exit 1
+          fi
+
+          echo "====================================================================="
+      command:
+        - /bin/bash
+      env:
+        - name: NAMESPACE
+          value: storefront-dev
+      image: $(inputs.params.tools-image)
+      name: health-check
+      resources: {}
+      workingDir: $(inputs.resources.git-source.path)
