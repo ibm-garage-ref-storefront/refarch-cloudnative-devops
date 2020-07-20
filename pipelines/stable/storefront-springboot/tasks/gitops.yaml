@@ -46,8 +46,6 @@ spec:
           set -e
 
           echo "Cloning the below repository"
-          echo $(inputs.params.gitOrg)
-          echo $(inputs.params.gitOpsRepo)
 
           # clone repo
           git clone https://github.com/$(inputs.params.gitOrg)/$(inputs.params.gitOpsRepo).git
