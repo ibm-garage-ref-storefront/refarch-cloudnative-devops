@@ -33,6 +33,11 @@ spec:
       name: webhooks-tekton-target-namespace
     - description: Name of the git repo.
       name: gitRepo
+    - description: Name of the git org.
+      name: gitOrg
+    - description: Name of the gitOps repo.
+      default: gitops-dev
+      name: gitOpsRepo
   resourcetemplates:
     - apiVersion: tekton.dev/v1alpha1
       kind: PipelineResource
@@ -78,6 +83,10 @@ spec:
           value: $(params.docker-tag)
         - name: gitRepo
           value: $(params.gitRepo)
+        - name: gitOrg
+          value: $(params.gitOrg)
+        - name: gitOpsRepo
+          value: $(params.gitOpsRepo)
         pipelineRef:
           name: storefront-springboot-pl
         resources:
