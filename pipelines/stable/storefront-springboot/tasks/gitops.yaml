@@ -17,6 +17,11 @@ spec:
         default: node:12-stretch
       - name: gitRepo
         type: string
+      - name: gitOrg
+        type: string
+      - name: gitOpsRepo
+        type: string
+        default: gitops-dev
   steps:
     - name: update-gitops-repo
       image: $(inputs.params.js-image)
@@ -41,11 +46,10 @@ spec:
           set -e
 
           echo "Cloning the below repository"
-          echo $(inputs.params.gitRepo)
 
           # clone repo
-          git clone https://github.com/ibm-garage-ref-storefront/gitops-dev.git
-          cd gitops-dev/$(inputs.params.gitRepo)
+          git clone https://github.com/$(inputs.params.gitOrg)/$(inputs.params.gitOpsRepo).git
+          cd $(inputs.params.gitOpsRepo)/$(inputs.params.gitRepo)
 
           # update value for key applicationImage
           sed -i '/applicationImage:/c\  applicationImage: $(inputs.resources.docker-image.url)' ./appsody/app-deploy.yaml
@@ -63,5 +67,5 @@ spec:
           git add .
           git commit -m "Tekton CI commit"
           git remote rm origin
-          git remote add origin https://${GIT_USER_ACCOUNT}:${GITHUB_API_TOKEN}@github.com/ibm-garage-ref-storefront/gitops-dev.git > /dev/null 2>&1
+          git remote add origin https://${GIT_USER_ACCOUNT}:${GITHUB_API_TOKEN}@github.com/$(inputs.params.gitOrg)/$(inputs.params.gitOpsRepo).git > /dev/null 2>&1
           git push origin master

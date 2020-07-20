@@ -15,6 +15,12 @@ spec:
   - description: Name of the git repo.
     name: gitRepo
     type: string
+  - description: Name of the git org.
+    name: gitOrg
+    type: string
+  - description: Name of the gitOps repo.
+    name: gitOpsRepo
+    type: string
   resources:
   - name: git-source
     type: git
@@ -130,6 +136,10 @@ spec:
     params:
         - name: gitRepo
           value: "$(params.gitRepo)"
+        - name: gitOrg
+          value: "$(params.gitOrg)"
+        - name: gitOpsRepo
+          value: "$(params.gitOpsRepo)"
     runAfter:
     - health-check-task
     taskRef:

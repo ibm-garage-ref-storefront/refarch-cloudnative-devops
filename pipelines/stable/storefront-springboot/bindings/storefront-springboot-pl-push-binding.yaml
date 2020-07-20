@@ -21,3 +21,5 @@ spec:
       value: $(body.webhooks-tekton-git-branch)
     - name: gitRepo
       value: $(body.repository.name)
+    - name: gitOrg
+      value: $(body.repository.owner.name)
