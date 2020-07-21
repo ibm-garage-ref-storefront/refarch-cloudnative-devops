@@ -11,6 +11,12 @@ spec:
   - description: The event ref
     name: event-ref
     type: string
+  - description: Name of the git org.
+    name: gitOrg
+    type: string
+  - description: Name of the gitOps repo.
+    name: gitOpsRepo
+    type: string
   resources:
   - name: git-source
     type: git
@@ -120,6 +126,11 @@ spec:
           resource: git-source
         - name: docker-image
           resource: docker-image
+    params:
+        - name: gitOrg
+          value: "$(params.gitOrg)"
+        - name: gitOpsRepo
+          value: "$(params.gitOpsRepo)"
     runAfter:
     - health-check-task
     taskRef:

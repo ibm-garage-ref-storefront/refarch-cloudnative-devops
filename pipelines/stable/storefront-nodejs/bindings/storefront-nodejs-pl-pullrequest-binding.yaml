@@ -18,3 +18,5 @@ spec:
       value: $(header.X-Github-Event)
     - name: webhooks-tekton-git-branch
       value: $(body.webhooks-tekton-git-branch)
+    - name: gitOrg
+      value: $(body.repository.owner.name)
