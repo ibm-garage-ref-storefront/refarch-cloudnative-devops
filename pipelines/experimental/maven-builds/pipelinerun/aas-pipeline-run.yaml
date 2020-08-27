@@ -1,0 +1,23 @@
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineRun
+metadata:
+  generateName: aas-pipeline-run-
+spec:
+  params:
+    - name: git-repo
+      value: 'https://github.com/kitty-catt/jboss-eap-quickstarts'
+    - name: revision
+      value: master
+    - name: module
+      value: kitchensink
+  pipelineRef:
+    name: aas-pipeline
+  workspaces:
+    - name: maven-settings
+      emptyDir: {}
+    - name: shared-workspace
+      persistentvolumeclaim:
+        claimName: maven-source-pvc
+    - name: local-maven-repo
+      persistentVolumeClaim:
+        claimName: maven-repo-pvc
